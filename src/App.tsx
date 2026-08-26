@@ -1,0 +1,77 @@
+import React, { useEffect } from 'react';
+import { StoreProvider, useStore } from './context/StoreContext';
+import { Navbar } from './components/Navbar';
+import { Footer } from './components/Footer';
+import { HomeHero } from './components/HomeHero';
+import { FeaturedCollections } from './components/FeaturedCollections';
+import { BestSellers } from './components/BestSellers';
+import { CraftsmanshipSection } from './components/CraftsmanshipSection';
+import { ShopPage } from './components/ShopPage';
+import { ProductDetailPage } from './components/ProductDetailPage';
+import { CollectionsPage } from './components/CollectionsPage';
+import { AboutPage } from './components/AboutPage';
+import { ContactPage } from './components/ContactPage';
+import { AdminLayout } from './components/admin/AdminLayout';
+import { OrderModal } from './components/OrderModal';
+import { PearlGuideModal } from './components/PearlGuideModal';
+import { OrderTracker } from './components/OrderTracker';
+import { ToastContainer } from './components/ToastContainer';
+
+const MainContent: React.FC = () => {
+  const { currentPage } = useStore();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
+  // When inside Admin, render AdminLayout independently
+  if (currentPage === 'admin') {
+    return <AdminLayout />;
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#0B0B0B] text-[#F8F5EE] selection:bg-[#C9A227]/30 selection:text-[#F8F5EE]">
+      {/* Global Luxury Navigation */}
+      <Navbar />
+
+      {/* Main Routed Content */}
+      <main className="flex-1">
+        {currentPage === 'home' && (
+          <>
+            <HomeHero />
+            <FeaturedCollections />
+            <BestSellers />
+            <CraftsmanshipSection />
+          </>
+        )}
+
+        {currentPage === 'shop' && <ShopPage />}
+
+        {currentPage === 'product-detail' && <ProductDetailPage />}
+
+        {currentPage === 'collections' && <CollectionsPage />}
+
+        {currentPage === 'about' && <AboutPage />}
+
+        {currentPage === 'contact' && <ContactPage />}
+      </main>
+
+      {/* Global Luxury Footer */}
+      <Footer />
+
+      {/* Customer Modals & Overlays */}
+      <OrderModal />
+      <PearlGuideModal />
+      <OrderTracker />
+      <ToastContainer />
+    </div>
+  );
+};
+
+export default function App() {
+  return (
+    <StoreProvider>
+      <MainContent />
+    </StoreProvider>
+  );
+}

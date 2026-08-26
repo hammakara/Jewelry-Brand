@@ -1,0 +1,6 @@
+{
+  "name": "Maison des Perles - Luxury Pearl Jewelry",
+  "description": "Exclusive luxury pearl jewelry boutique featuring curated collections, custom order requests, and an integrated admin management dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
