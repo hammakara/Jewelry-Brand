@@ -1,6 +1,6 @@
 {
-  "name": "Maison des Perles - Luxury Pearl Jewelry",
-  "description": "Exclusive luxury pearl jewelry boutique featuring curated collections, custom order requests, and an integrated admin management dashboard.",
+  "name": "ប្រណិត (PRANITH) - Luxury Pearl Jewelry",
+  "description": "ហាងគ្រឿងអលង្ការគុជខ្យងប្រណីត ប្រណិត (PRANITH) — គុជខ្យងធម្មជាតិពិត ១០០% ស្រោបដោយមាស 18K និងប្រាក់សុទ្ធ ៩២៥។",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

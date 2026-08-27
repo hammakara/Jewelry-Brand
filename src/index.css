@@ -2,18 +2,21 @@
 
 @layer base {
   :root {
-    --brand-black: #0B0B0B;
-    --brand-gold: #C9A227;
-    --brand-light-gold: #E6C766;
-    --brand-ivory: #F8F5EE;
-    --brand-dark-gray: #1A1A1A;
+    --brand-gold-bg: #8C6A1B;
+    --brand-gold-surface: #6E5212;
+    --brand-gold-dark: #523D0C;
+    --brand-gold-deep: #3D2D07;
     --brand-white: #FFFFFF;
+    --brand-white-soft: #F9F9F9;
+    --brand-gold-light: #FFDF79;
   }
 
   body {
     font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif;
-    background-color: #0B0B0B;
-    color: #F8F5EE;
+    background-color: #7B5B12;
+    background-image: radial-gradient(circle at 50% 0%, #A67E24 0%, #7B5B12 50%, #5E440A 100%);
+    background-attachment: fixed;
+    color: #FFFFFF;
     overflow-x: hidden;
   }
 
@@ -26,43 +29,39 @@
   }
 }
 
-/* Custom Gold and Pearl Sheen */
+/* Luxury White & Gold Sheen */
 .gold-gradient-text {
-  background: linear-gradient(135deg, #F8E7A2 0%, #C9A227 50%, #A37F14 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF4D0 60%, #E6C766 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gold-border {
-  border-color: rgba(201, 162, 39, 0.3);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .gold-border-active {
-  border-color: rgba(201, 162, 39, 0.8);
+  border-color: rgba(255, 255, 255, 0.85);
 }
 
 .pearl-shimmer {
-  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(248,245,238,0.2) 60%, rgba(201,162,39,0.1) 100%);
+  background: radial-gradient(circle at 30% 30%, #FFFFFF, rgba(255, 255, 255, 0.6) 60%, rgba(201, 162, 39, 0.2) 100%);
 }
 
-.bg-ivory {
-  background-color: #F8F5EE;
+.bg-gold-canvas {
+  background: linear-gradient(180deg, #8A6818 0%, #735410 50%, #5C420A 100%);
 }
 
-.bg-brand-black {
-  background-color: #0B0B0B;
+.bg-gold-surface {
+  background-color: #5E440B;
 }
 
-.bg-brand-dark {
-  background-color: #141414;
+.bg-gold-card {
+  background-color: #4D3708;
 }
 
-.text-gold {
-  color: #C9A227;
-}
-
-.border-gold {
-  border-color: #C9A227;
+.bg-gold-deep {
+  background-color: #382704;
 }
 
 /* Custom scrollbar */
@@ -71,12 +70,13 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0B0B0B;
+  background: #4A3508;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C9A227;
+  background: #FFFFFF;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #E6C766;
+  background: #FFF4D0;
 }
+

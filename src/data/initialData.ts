@@ -362,18 +362,18 @@ export const INITIAL_ORDERS: OrderRequest[] = [
 ];
 
 export const INITIAL_SETTINGS: StoreSettings = {
-  brandName: 'Maison des Perles',
-  tagline: 'Elegance in Every Pearl — Timeless Luxury Jewelry',
+  brandName: 'ប្រណិត (PRANITH)',
+  tagline: 'ប្រណិត — ភាពថ្លៃថ្នូរ និងភាពល្អឥតខ្ចោះនៃគុជខ្យងធម្មជាតិ | Timeless Luxury Pearl Jewelry',
   hotline: '+855 (0) 12 888 999',
-  telegramUsername: 'MaisonDesPerles_Official',
-  telegramGroupLink: 'https://t.me/MaisonDesPerles_Official',
-  email: 'concierge@maisondesperles.luxury',
+  telegramUsername: 'Pranith_Official',
+  telegramGroupLink: 'https://t.me/Pranith_Official',
+  email: 'concierge@pranith.luxury',
   boutiqueAddress: 'Grand Boulevard, Vattanac Capital Luxury Mall, Phnom Penh, Cambodia',
   boutiqueAddressKhmer: 'មហាវិថីព្រះមុនីវង្ស អគារពាណិជ្ជកម្ម វឌ្ឍនៈ កាពីតាល់ រាជធានីភ្នំពេញ',
   currencySymbol: '$',
   exchangeRateKhr: 4100,
   businessHours: 'Mon - Sun: 9:30 AM – 8:00 PM (Boutique & Online Concierge)',
-  instagramUrl: 'https://instagram.com/maisondesperles',
-  facebookUrl: 'https://facebook.com/maisondesperles',
+  instagramUrl: 'https://instagram.com/pranith_pearls',
+  facebookUrl: 'https://facebook.com/pranith.luxury',
   allowDirectTelegramOrders: true,
 };

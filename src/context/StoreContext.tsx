@@ -155,7 +155,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [settings, setSettings] = useState<StoreSettings>(() => {
     try {
       const saved = localStorage.getItem('mdp_settings_v1');
-      return saved ? JSON.parse(saved) : INITIAL_SETTINGS;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.brandName === 'Maison des Perles' || !parsed.brandName) {
+          return { ...parsed, brandName: 'ប្រណិត (PRANITH)' };
+        }
+        return parsed;
+      }
+      return INITIAL_SETTINGS;
     } catch {
       return INITIAL_SETTINGS;
     }

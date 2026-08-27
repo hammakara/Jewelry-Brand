@@ -30,7 +30,7 @@ const MainContent: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0B0B] text-[#F8F5EE] selection:bg-[#C9A227]/30 selection:text-[#F8F5EE]">
+    <div className="min-h-screen flex flex-col bg-[#7B5B12] text-white selection:bg-white selection:text-[#523D0C]">
       {/* Global Luxury Navigation */}
       <Navbar />
 
