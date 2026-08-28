@@ -95,5 +95,22 @@ export interface StoreSettings {
   adminPasscode?: string;
 }
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  phone?: string | null;
+  role: 'ADMIN' | 'STAFF' | 'CUSTOMER';
+  avatarUrl?: string;
+  createdAt: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+  message?: string;
+  error?: string;
+}
+
 export type PageView = 'home' | 'shop' | 'collections' | 'product-detail' | 'about' | 'contact' | 'admin' | 'order-tracker';
 export type Language = 'en' | 'km';

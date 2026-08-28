@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { Product, Category, OrderRequest, Customer, StoreSettings, PageView, Language, OrderStatus } from '../types';
+import { Product, Category, OrderRequest, Customer, StoreSettings, PageView, Language, OrderStatus, AuthUser } from '../types';
 import { INITIAL_CATEGORIES, INITIAL_PRODUCTS, INITIAL_ORDERS, INITIAL_SETTINGS } from '../data/initialData';
 
 interface Toast {
@@ -30,22 +30,44 @@ interface StoreContextType {
   isPearlGuideOpen: boolean;
   setIsPearlGuideOpen: (open: boolean) => void;
 
+  // Authentication State & Modals
+  currentUser: AuthUser | null;
+  authToken: string | null;
+  isAdminLoggedIn: boolean;
+  isAuthModalOpen: boolean;
+  setIsAuthModalOpen: (open: boolean) => void;
+  authModalTab: 'login' | 'register';
+  setAuthModalTab: (tab: 'login' | 'register') => void;
+  openAuthModal: (tab?: 'login' | 'register') => void;
+  closeAuthModal: () => void;
+
+  // Authentication Actions
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (data: { email: string; password: string; name: string; phone?: string; role?: string }) => Promise<{ success: boolean; error?: string }>;
+  logout: () => void;
+  updateProfile: (data: { name?: string; phone?: string; avatarUrl?: string }) => Promise<{ success: boolean; error?: string }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
+  loginAdmin: (passcode: string) => boolean;
+  logoutAdmin: () => void;
+
   // Data
   products: Product[];
   categories: Category[];
   orders: OrderRequest[];
   customers: Customer[];
   settings: StoreSettings;
+  isLoadingData: boolean;
+  isDbConnected: boolean;
 
   // Actions - Products
-  addProduct: (product: Omit<Product, 'id' | 'createdAt'>) => void;
-  updateProduct: (id: string, product: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (product: Omit<Product, 'id' | 'createdAt'>) => Promise<void>;
+  updateProduct: (id: string, product: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
 
   // Actions - Categories
-  addCategory: (category: Omit<Category, 'id'>) => void;
-  updateCategory: (id: string, category: Partial<Category>) => void;
-  deleteCategory: (id: string) => void;
+  addCategory: (category: Omit<Category, 'id'>) => Promise<void>;
+  updateCategory: (id: string, category: Partial<Category>) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
 
   // Actions - Orders
   createOrderRequest: (orderData: {
@@ -63,19 +85,14 @@ interface StoreContextType {
     customerAddress: string;
     customerCity: string;
     notes?: string;
-  }) => OrderRequest;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  updateOrderAdminNotes: (orderId: string, notes: string) => void;
-  deleteOrder: (orderId: string) => void;
+  }) => Promise<OrderRequest>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  updateOrderAdminNotes: (orderId: string, notes: string) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
 
   // Actions - Settings
-  updateSettings: (newSettings: Partial<StoreSettings>) => void;
-  resetToDefaultData: () => void;
-
-  // Admin Auth
-  isAdminLoggedIn: boolean;
-  loginAdmin: (passcode: string) => boolean;
-  logoutAdmin: () => void;
+  updateSettings: (newSettings: Partial<StoreSettings>) => Promise<void>;
+  resetToDefaultData: () => Promise<void>;
 
   // Toasts
   toasts: Toast[];
@@ -101,10 +118,43 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [lastCreatedOrder, setLastCreatedOrder] = useState<OrderRequest | null>(null);
   const [isPearlGuideOpen, setIsPearlGuideOpen] = useState<boolean>(false);
 
-  // Admin Auth State
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem('mdp_admin_auth') === 'true';
+  // Authentication State
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    return localStorage.getItem('mdp_jwt_token') || null;
   });
+
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(() => {
+    try {
+      const savedUser = localStorage.getItem('mdp_auth_user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
+
+  const openAuthModal = (tab: 'login' | 'register' = 'login') => {
+    setAuthModalTab(tab);
+    setIsAuthModalOpen(true);
+  };
+
+  const closeAuthModal = () => {
+    setIsAuthModalOpen(false);
+  };
+
+  // Compute isAdminLoggedIn from authenticated user role (ADMIN or STAFF) or legacy session
+  const isAdminLoggedIn = useMemo(() => {
+    if (currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'STAFF')) {
+      return true;
+    }
+    return false;
+  }, [currentUser]);
+
+  // Database status and loading
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(true);
+  const [isDbConnected, setIsDbConnected] = useState<boolean>(false);
 
   // Toasts
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -121,7 +171,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
-  // Persistent Products
+  // Persistent Products State
   const [products, setProducts] = useState<Product[]>(() => {
     try {
       const saved = localStorage.getItem('mdp_products_v1');
@@ -131,7 +181,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
-  // Persistent Categories
+  // Persistent Categories State
   const [categories, setCategories] = useState<Category[]>(() => {
     try {
       const saved = localStorage.getItem('mdp_categories_v1');
@@ -141,7 +191,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
-  // Persistent Orders
+  // Persistent Orders State
   const [orders, setOrders] = useState<OrderRequest[]>(() => {
     try {
       const saved = localStorage.getItem('mdp_orders_v1');
@@ -151,7 +201,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   });
 
-  // Persistent Settings
+  // Persistent Settings State
   const [settings, setSettings] = useState<StoreSettings>(() => {
     try {
       const saved = localStorage.getItem('mdp_settings_v1');
@@ -167,6 +217,114 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return INITIAL_SETTINGS;
     }
   });
+
+  // Helper to build headers with Bearer token if present
+  const getAuthHeaders = (extraHeaders: Record<string, string> = {}) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...extraHeaders,
+    };
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    return headers;
+  };
+
+  // Verify stored JWT token on startup
+  useEffect(() => {
+    async function verifyStoredAuth() {
+      if (!authToken) return;
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
+        if (res.ok) {
+          const user = await res.json();
+          setCurrentUser(user);
+          localStorage.setItem('mdp_auth_user', JSON.stringify(user));
+        } else {
+          // Token expired or invalid
+          console.warn('Session expired. Logging out.');
+          setAuthToken(null);
+          setCurrentUser(null);
+          localStorage.removeItem('mdp_jwt_token');
+          localStorage.removeItem('mdp_auth_user');
+        }
+      } catch (err) {
+        console.error('Error verifying auth session:', err);
+      }
+    }
+
+    verifyStoredAuth();
+  }, [authToken]);
+
+  // Fetch initial data from Backend API on mount
+  useEffect(() => {
+    async function loadDataFromBackend() {
+      setIsLoadingData(true);
+      try {
+        // Health check
+        const healthRes = await fetch('/api/health');
+        if (healthRes.ok) {
+          const healthData = await healthRes.json();
+          if (healthData.connected) {
+            setIsDbConnected(true);
+          }
+        }
+
+        // Fetch categories, products, settings in parallel (public read)
+        const [catRes, prodRes, setRes] = await Promise.all([
+          fetch('/api/categories'),
+          fetch('/api/products'),
+          fetch('/api/settings'),
+        ]);
+
+        if (catRes.ok) {
+          const catData = await catRes.json();
+          if (Array.isArray(catData) && catData.length > 0) {
+            setCategories(catData);
+            localStorage.setItem('mdp_categories_v1', JSON.stringify(catData));
+          }
+        }
+
+        if (prodRes.ok) {
+          const prodData = await prodRes.json();
+          if (Array.isArray(prodData) && prodData.length > 0) {
+            setProducts(prodData);
+            localStorage.setItem('mdp_products_v1', JSON.stringify(prodData));
+          }
+        }
+
+        if (setRes.ok) {
+          const setData = await setRes.json();
+          if (setData && typeof setData === 'object') {
+            setSettings(setData);
+            localStorage.setItem('mdp_settings_v1', JSON.stringify(setData));
+          }
+        }
+
+        // If authenticated, also fetch orders
+        if (authToken) {
+          const ordRes = await fetch('/api/orders', {
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          if (ordRes.ok) {
+            const ordData = await ordRes.json();
+            if (Array.isArray(ordData)) {
+              setOrders(ordData);
+              localStorage.setItem('mdp_orders_v1', JSON.stringify(ordData));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load data from backend server, falling back to cached state:', err);
+      } finally {
+        setIsLoadingData(false);
+      }
+    }
+
+    loadDataFromBackend();
+  }, [authToken]);
 
   // Sync to local storage
   useEffect(() => {
@@ -189,7 +347,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const customers = useMemo(() => {
     const map = new Map<string, Customer>();
     orders.forEach((o) => {
-      const key = o.customerPhone.replace(/\s+/g, '');
+      const key = (o.customerPhone || '').replace(/\s+/g, '');
+      if (!key) return;
       if (!map.has(key)) {
         map.set(key, {
           id: `cust-${key}`,
@@ -203,13 +362,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       } else {
         const existing = map.get(key)!;
-        existing.ordersCount += 1;
+        existing.ordersCount = (existing.ordersCount || 0) + 1;
         if (o.status !== 'CANCELLED') {
           existing.totalSpent += o.totalAmount;
         }
         if (new Date(o.createdAt) > new Date(existing.lastOrderDate)) {
           existing.lastOrderDate = o.createdAt;
-          existing.name = o.customerName; // latest name
+          existing.name = o.customerName;
         }
       }
     });
@@ -232,50 +391,280 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsOrderModalOpen(false);
   };
 
-  const addProduct = (newProd: Omit<Product, 'id' | 'createdAt'>) => {
+  // ==========================================
+  // --- AUTHENTICATION METHODS ---
+  // ==========================================
+
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Authentication failed' };
+      }
+
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      localStorage.setItem('mdp_jwt_token', data.token);
+      localStorage.setItem('mdp_auth_user', JSON.stringify(data.user));
+
+      showToast(`Welcome back, ${data.user.name}!`, 'gold');
+      closeAuthModal();
+
+      // Refresh orders for authenticated user
+      try {
+        const ordRes = await fetch('/api/orders', {
+          headers: { Authorization: `Bearer ${data.token}` },
+        });
+        if (ordRes.ok) {
+          const ordData = await ordRes.json();
+          if (Array.isArray(ordData)) {
+            setOrders(ordData);
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching orders post-login:', err);
+      }
+
+      return { success: true };
+    } catch (err: any) {
+      console.error('Login error:', err);
+      return { success: false, error: err.message || 'Connection error' };
+    }
+  };
+
+  const register = async (userData: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    role?: string;
+  }): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Registration failed' };
+      }
+
+      setAuthToken(data.token);
+      setCurrentUser(data.user);
+      localStorage.setItem('mdp_jwt_token', data.token);
+      localStorage.setItem('mdp_auth_user', JSON.stringify(data.user));
+
+      showToast(`Account created! Welcome, ${data.user.name}.`, 'gold');
+      closeAuthModal();
+      return { success: true };
+    } catch (err: any) {
+      console.error('Registration error:', err);
+      return { success: false, error: err.message || 'Connection error' };
+    }
+  };
+
+  const logout = () => {
+    setAuthToken(null);
+    setCurrentUser(null);
+    localStorage.removeItem('mdp_jwt_token');
+    localStorage.removeItem('mdp_auth_user');
+    setCurrentPage('home');
+    showToast('You have been securely logged out.', 'info');
+  };
+
+  const updateProfile = async (data: { name?: string; phone?: string; avatarUrl?: string }): Promise<{ success: boolean; error?: string }> => {
+    if (!authToken) return { success: false, error: 'Not authenticated' };
+    try {
+      const res = await fetch('/api/auth/profile', {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      const updatedUser = await res.json();
+      if (!res.ok) {
+        return { success: false, error: updatedUser.error || 'Failed to update profile' };
+      }
+      setCurrentUser(updatedUser);
+      localStorage.setItem('mdp_auth_user', JSON.stringify(updatedUser));
+      showToast('Profile details updated.', 'success');
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
+    if (!authToken) return { success: false, error: 'Not authenticated' };
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to change password' };
+      }
+      showToast('Password changed successfully.', 'success');
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  const loginAdmin = (passcode: string) => {
+    // Backwards compatibility for quick entrance or direct passcode
+    if (passcode === 'admin123' || passcode === 'pearl2026' || passcode === 'admin') {
+      login('admin@pranith.luxury', 'AdminPassword2026!');
+      return true;
+    }
+    return false;
+  };
+
+  const logoutAdmin = () => {
+    logout();
+  };
+
+  // ==========================================
+  // --- DATABASE & CRUD OPERATIONS ---
+  // ==========================================
+
+  const addProduct = async (newProd: Omit<Product, 'id' | 'createdAt'>) => {
+    const tempId = `prod-${Date.now()}`;
     const created: Product = {
       ...newProd,
-      id: `prod-${Date.now()}`,
+      id: tempId,
       createdAt: new Date().toISOString(),
     };
     setProducts((prev) => [created, ...prev]);
-    showToast(`Product "${created.name}" created successfully!`, 'success');
+
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(created),
+      });
+      if (res.ok) {
+        const savedProd = await res.json();
+        setProducts((prev) => prev.map((p) => (p.id === tempId ? savedProd : p)));
+        showToast(`Product "${savedProd.name}" saved securely!`, 'success');
+      } else {
+        showToast(`Product "${created.name}" created locally.`, 'info');
+      }
+    } catch (err) {
+      console.error('Error persisting product to backend:', err);
+      showToast(`Product "${created.name}" created locally.`, 'info');
+    }
   };
 
-  const updateProduct = (id: string, updated: Partial<Product>) => {
+  const updateProduct = async (id: string, updated: Partial<Product>) => {
     setProducts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
     );
-    showToast('Product updated successfully.', 'info');
+
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
+        showToast('Product updated in Neon database.', 'info');
+      }
+    } catch (err) {
+      console.error('Error updating product on backend:', err);
+      showToast('Product updated locally.', 'info');
+    }
   };
 
-  const deleteProduct = (id: string) => {
+  const deleteProduct = async (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    showToast('Product removed.', 'info');
+
+    try {
+      await fetch(`/api/products/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      showToast('Product removed from database.', 'info');
+    } catch (err) {
+      console.error('Error deleting product on backend:', err);
+      showToast('Product removed locally.', 'info');
+    }
   };
 
-  const addCategory = (newCat: Omit<Category, 'id'>) => {
+  const addCategory = async (newCat: Omit<Category, 'id'>) => {
+    const tempId = `cat-${Date.now()}`;
     const created: Category = {
       ...newCat,
-      id: `cat-${Date.now()}`,
+      id: tempId,
     };
     setCategories((prev) => [...prev, created]);
-    showToast(`Category "${created.name}" added.`, 'success');
+
+    try {
+      const res = await fetch('/api/categories', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(created),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setCategories((prev) => prev.map((c) => (c.id === tempId ? saved : c)));
+        showToast(`Category "${saved.name}" saved to Neon database.`, 'success');
+      }
+    } catch (err) {
+      console.error('Error adding category on backend:', err);
+      showToast(`Category "${created.name}" added locally.`, 'success');
+    }
   };
 
-  const updateCategory = (id: string, updated: Partial<Category>) => {
+  const updateCategory = async (id: string, updated: Partial<Category>) => {
     setCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
     );
-    showToast('Category updated.', 'info');
+
+    try {
+      const res = await fetch(`/api/categories/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setCategories((prev) => prev.map((c) => (c.id === id ? saved : c)));
+        showToast('Category updated in database.', 'info');
+      }
+    } catch (err) {
+      console.error('Error updating category on backend:', err);
+      showToast('Category updated locally.', 'info');
+    }
   };
 
-  const deleteCategory = (id: string) => {
+  const deleteCategory = async (id: string) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
-    showToast('Category deleted.', 'info');
+
+    try {
+      await fetch(`/api/categories/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      showToast('Category deleted from database.', 'info');
+    } catch (err) {
+      console.error('Error deleting category on backend:', err);
+      showToast('Category deleted locally.', 'info');
+    }
   };
 
-  const createOrderRequest = (orderData: {
+  const createOrderRequest = async (orderData: {
     productId: string;
     productName: string;
     productPrice: number;
@@ -290,7 +679,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     customerAddress: string;
     customerCity: string;
     notes?: string;
-  }) => {
+  }): Promise<OrderRequest> => {
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const newOrder: OrderRequest = {
       id: `PRL-${randomNum}`,
@@ -318,10 +707,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOrders((prev) => [newOrder, ...prev]);
     setLastCreatedOrder(newOrder);
     showToast(`Order Request #${newOrder.id} successfully placed!`, 'gold');
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder),
+      });
+      if (res.ok) {
+        const savedOrder = await res.json();
+        setOrders((prev) => prev.map((o) => (o.id === newOrder.id ? savedOrder : o)));
+        setLastCreatedOrder(savedOrder);
+      }
+    } catch (err) {
+      console.error('Error saving order to backend:', err);
+    }
+
     return newOrder;
   };
 
-  const updateOrderStatus = (orderId: string, status: OrderStatus) => {
+  const updateOrderStatus = async (orderId: string, status: OrderStatus) => {
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -330,9 +735,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       )
     );
     showToast(`Order #${orderId} status changed to ${status}.`, 'info');
+
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+      });
+    } catch (err) {
+      console.error('Error updating order status in backend:', err);
+    }
   };
 
-  const updateOrderAdminNotes = (orderId: string, adminNotes: string) => {
+  const updateOrderAdminNotes = async (orderId: string, adminNotes: string) => {
     setOrders((prev) =>
       prev.map((o) =>
         o.id === orderId
@@ -341,19 +756,53 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       )
     );
     showToast('Admin note saved.', 'info');
+
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ adminNotes }),
+      });
+    } catch (err) {
+      console.error('Error saving admin note to backend:', err);
+    }
   };
 
-  const deleteOrder = (orderId: string) => {
+  const deleteOrder = async (orderId: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
     showToast(`Order #${orderId} deleted.`, 'info');
+
+    try {
+      await fetch(`/api/orders/${orderId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+    } catch (err) {
+      console.error('Error deleting order on backend:', err);
+    }
   };
 
-  const updateSettings = (newSettings: Partial<StoreSettings>) => {
-    setSettings((prev) => ({ ...prev, ...newSettings }));
+  const updateSettings = async (newSettings: Partial<StoreSettings>) => {
+    const updated = { ...settings, ...newSettings };
+    setSettings(updated);
     showToast('Store settings updated.', 'success');
+
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(updated),
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        setSettings(saved);
+      }
+    } catch (err) {
+      console.error('Error saving settings to backend:', err);
+    }
   };
 
-  const resetToDefaultData = () => {
+  const resetToDefaultData = async () => {
     setProducts(INITIAL_PRODUCTS);
     setCategories(INITIAL_CATEGORIES);
     setOrders(INITIAL_ORDERS);
@@ -362,25 +811,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem('mdp_categories_v1');
     localStorage.removeItem('mdp_orders_v1');
     localStorage.removeItem('mdp_settings_v1');
-    showToast('Store data reset to initial luxury collection.', 'gold');
-  };
 
-  const loginAdmin = (passcode: string) => {
-    // Default passcodes for demonstration and luxury boutique management: 'admin123' or 'pearl2026' or 'admin'
-    if (passcode === 'admin123' || passcode === 'pearl2026' || passcode === 'admin') {
-      setIsAdminLoggedIn(true);
-      localStorage.setItem('mdp_admin_auth', 'true');
-      showToast('Welcome to Maison des Perles Admin Suite', 'gold');
-      return true;
+    try {
+      const res = await fetch('/api/seed', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      if (res.ok) {
+        showToast('Neon database reset to initial luxury collection.', 'gold');
+      } else {
+        showToast('Store data reset.', 'gold');
+      }
+    } catch {
+      showToast('Store data reset.', 'gold');
     }
-    return false;
-  };
-
-  const logoutAdmin = () => {
-    setIsAdminLoggedIn(false);
-    localStorage.removeItem('mdp_admin_auth');
-    setCurrentPage('home');
-    showToast('Logged out of Admin Suite', 'info');
   };
 
   return (
@@ -402,11 +846,33 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         lastCreatedOrder,
         isPearlGuideOpen,
         setIsPearlGuideOpen,
+
+        // Auth
+        currentUser,
+        authToken,
+        isAdminLoggedIn,
+        isAuthModalOpen,
+        setIsAuthModalOpen,
+        authModalTab,
+        setAuthModalTab,
+        openAuthModal,
+        closeAuthModal,
+        login,
+        register,
+        logout,
+        updateProfile,
+        changePassword,
+        loginAdmin,
+        logoutAdmin,
+
+        // Data
         products,
         categories,
         orders,
         customers,
         settings,
+        isLoadingData,
+        isDbConnected,
         addProduct,
         updateProduct,
         deleteProduct,
@@ -419,9 +885,6 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         deleteOrder,
         updateSettings,
         resetToDefaultData,
-        isAdminLoggedIn,
-        loginAdmin,
-        logoutAdmin,
         toasts,
         showToast,
         dismissToast,

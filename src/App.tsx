@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { StoreProvider, useStore } from './context/StoreContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
@@ -15,6 +16,7 @@ import { AdminLayout } from './components/admin/AdminLayout';
 import { OrderModal } from './components/OrderModal';
 import { PearlGuideModal } from './components/PearlGuideModal';
 import { OrderTracker } from './components/OrderTracker';
+import { AuthModal } from './components/AuthModal';
 import { ToastContainer } from './components/ToastContainer';
 
 const MainContent: React.FC = () => {
@@ -34,26 +36,37 @@ const MainContent: React.FC = () => {
       {/* Global Luxury Navigation */}
       <Navbar />
 
-      {/* Main Routed Content */}
+      {/* Main Routed Content with Animated Transitions */}
       <main className="flex-1">
-        {currentPage === 'home' && (
-          <>
-            <HomeHero />
-            <FeaturedCollections />
-            <BestSellers />
-            <CraftsmanshipSection />
-          </>
-        )}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="w-full"
+          >
+            {currentPage === 'home' && (
+              <>
+                <HomeHero />
+                <FeaturedCollections />
+                <BestSellers />
+                <CraftsmanshipSection />
+              </>
+            )}
 
-        {currentPage === 'shop' && <ShopPage />}
+            {currentPage === 'shop' && <ShopPage />}
 
-        {currentPage === 'product-detail' && <ProductDetailPage />}
+            {currentPage === 'product-detail' && <ProductDetailPage />}
 
-        {currentPage === 'collections' && <CollectionsPage />}
+            {currentPage === 'collections' && <CollectionsPage />}
 
-        {currentPage === 'about' && <AboutPage />}
+            {currentPage === 'about' && <AboutPage />}
 
-        {currentPage === 'contact' && <ContactPage />}
+            {currentPage === 'contact' && <ContactPage />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* Global Luxury Footer */}
@@ -63,6 +76,7 @@ const MainContent: React.FC = () => {
       <OrderModal />
       <PearlGuideModal />
       <OrderTracker />
+      <AuthModal />
       <ToastContainer />
     </div>
   );

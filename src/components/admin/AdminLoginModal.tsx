@@ -1,91 +1,143 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { ShieldCheck, KeyRound, Sparkles, ArrowLeft, Lock } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, Sparkles, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export const AdminLoginModal: React.FC = () => {
-  const { loginAdmin, setCurrentPage } = useStore();
-  const [passcode, setPasscode] = useState('');
-  const [error, setError] = useState(false);
+  const { login, setCurrentPage } = useStore();
+  const [email, setEmail] = useState('admin@pranith.luxury');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = loginAdmin(passcode.trim());
-    if (!success) {
-      setError(true);
+    setErrorMessage(null);
+    setLoading(true);
+
+    const result = await login(email, password);
+    setLoading(false);
+
+    if (!result.success) {
+      setErrorMessage(result.error || 'Invalid credentials. Please verify your email and password.');
     }
   };
 
-  const handleQuickDemoAccess = () => {
-    loginAdmin('admin123');
+  const handleQuickDemoAccess = async () => {
+    setEmail('admin@pranith.luxury');
+    setPassword('AdminPassword2026!');
+    setErrorMessage(null);
+    setLoading(true);
+    const result = await login('admin@pranith.luxury', 'AdminPassword2026!');
+    setLoading(false);
+    if (!result.success) {
+      setErrorMessage(result.error || 'Failed to authenticate with demo credentials.');
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#7B5B12] text-white flex flex-col justify-center items-center px-4 py-12">
-      <div className="w-full max-w-md bg-[#523B08] border border-white/20 rounded-2xl shadow-2xl p-8 space-y-6">
+    <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center px-4 py-12">
+      <div className="w-full max-w-md bg-stone-900 border border-amber-500/30 rounded-2xl shadow-2xl p-8 space-y-6">
         
         {/* Top Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-full bg-[#3D2B05] border border-white/40 flex items-center justify-center mx-auto text-white mb-3">
-            <Lock className="w-6 h-6" />
+          <div className="w-14 h-14 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center mx-auto text-amber-400 mb-3 shadow-inner">
+            <ShieldCheck className="w-7 h-7" />
           </div>
-          <div className="font-display-luxury text-xl font-bold tracking-widest text-white">
+          <div className="font-display-luxury text-2xl font-bold tracking-widest text-amber-100">
             ប្រណិត ADMIN SUITE
           </div>
-          <p className="text-xs text-white/80">
-            Secure management portal for boutique products, order requests, and customer CRM.
+          <p className="text-xs text-stone-400">
+            Secure Role-Based Authentication with Neon PostgreSQL & JWT.
           </p>
         </div>
+
+        {/* Error Notification */}
+        {errorMessage && (
+          <div className="p-3 rounded-lg bg-red-950/60 border border-red-500/40 text-red-200 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         {/* Login Form */}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-white mb-1.5">
-              Admin Passcode
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
+              Admin Email
             </label>
             <div className="relative">
+              <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
               <input
-                type="password"
+                type="email"
                 required
-                value={passcode}
+                value={email}
                 onChange={(e) => {
-                  setPasscode(e.target.value);
-                  setError(false);
+                  setEmail(e.target.value);
+                  setErrorMessage(null);
                 }}
-                placeholder="Enter passcode (e.g. admin123)"
-                className="w-full bg-[#3D2B05] border border-white/30 focus:border-white focus:ring-1 focus:ring-white rounded-lg px-4 py-3 text-sm text-white placeholder-white/50 outline-none pl-10"
+                placeholder="admin@pranith.luxury"
+                className="w-full bg-stone-950 border border-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl px-4 py-3 text-sm text-stone-100 placeholder-stone-600 outline-none pl-10 transition"
               />
-              <KeyRound className="w-4 h-4 text-white/60 absolute left-3.5 top-3.5" />
             </div>
-            {error && (
-              <p className="text-xs text-rose-300 mt-1.5 font-bold">
-                Invalid passcode. You can click the "1-Click Demo Login" below.
-              </p>
-            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
+              Secure Password
+            </label>
+            <div className="relative">
+              <Lock className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                required
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorMessage(null);
+                }}
+                placeholder="Enter password..."
+                className="w-full bg-stone-950 border border-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl px-4 py-3 text-sm text-stone-100 placeholder-stone-600 outline-none pl-10 pr-10 transition"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-3.5 text-stone-500 hover:text-stone-300"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           <button
             type="submit"
-            className="w-full py-3.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-widest rounded-lg shadow-lg transition-all"
+            disabled={loading}
+            className="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold uppercase tracking-widest rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            Access Admin Portal
+            {loading ? (
+              <div className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              'Authenticate & Enter Suite'
+            )}
           </button>
         </form>
 
         {/* Quick Demo Access Button */}
-        <div className="pt-2 border-t border-white/20 space-y-3">
+        <div className="pt-3 border-t border-stone-800 space-y-3">
           <button
             type="button"
             onClick={handleQuickDemoAccess}
-            className="w-full py-2.5 bg-[#3D2B05] hover:bg-white text-white hover:text-[#523D0C] border border-white/30 text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors shadow-sm"
+            disabled={loading}
+            className="w-full py-2.5 bg-stone-800/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition shadow-sm"
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>1-Click Quick Demo Admin Login</span>
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>1-Click Super Admin Instant Login</span>
           </button>
 
           <button
             type="button"
             onClick={() => setCurrentPage('home')}
-            className="w-full text-center text-xs text-white/80 hover:text-white flex items-center justify-center gap-1 transition-colors font-semibold"
+            className="w-full text-center text-xs text-stone-400 hover:text-stone-200 flex items-center justify-center gap-1.5 transition font-medium"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Return to Boutique Website</span>

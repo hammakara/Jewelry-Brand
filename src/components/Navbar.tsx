@@ -7,10 +7,11 @@ import {
   Phone, 
   Send, 
   ShieldCheck, 
-  Search, 
   Clock, 
-  Gem,
-  ShoppingBag
+  ShoppingBag,
+  User,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import { PageView } from '../types';
 
@@ -22,11 +23,14 @@ export const Navbar: React.FC = () => {
     settings, 
     language, 
     setLanguage, 
-    isAdminLoggedIn,
+    currentUser,
+    openAuthModal,
+    logout,
     orders
   } = useStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const pendingOrdersCount = orders.filter(o => o.status === 'PENDING').length;
 
@@ -34,6 +38,7 @@ export const Navbar: React.FC = () => {
     setSelectedCategorySlug(categorySlug);
     setCurrentPage(page);
     setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -85,7 +90,77 @@ export const Navbar: React.FC = () => {
             </button>
           </div>
 
-          {/* Admin Suite Toggle */}
+          {/* Secure User Auth Profile / Login Button */}
+          {currentUser ? (
+            <div className="relative">
+              <button
+                onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                className="flex items-center gap-1.5 text-[11px] px-2.5 py-0.5 rounded bg-white/10 hover:bg-white/20 border border-white/30 text-white font-medium transition"
+              >
+                <UserCheck className="w-3 h-3 text-amber-300" />
+                <span className="max-w-[90px] truncate">{currentUser.name.split(' ')[0]}</span>
+                <span className="text-[9px] bg-amber-400/30 text-amber-200 px-1 rounded uppercase font-bold">
+                  {currentUser.role}
+                </span>
+              </button>
+
+              {userDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-stone-900 border border-amber-500/30 rounded-xl shadow-2xl py-2 z-50 text-left text-xs text-stone-200 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-2 border-b border-stone-800">
+                    <div className="font-bold text-white truncate">{currentUser.name}</div>
+                    <div className="text-[10px] text-stone-400 truncate">{currentUser.email}</div>
+                    <div className="text-[9px] text-amber-400 font-semibold uppercase mt-0.5">Role: {currentUser.role}</div>
+                  </div>
+
+                  {(currentUser.role === 'ADMIN' || currentUser.role === 'STAFF') && (
+                    <button
+                      onClick={() => navigate('admin')}
+                      className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center justify-between text-amber-200"
+                    >
+                      <span className="flex items-center gap-2">
+                        <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                        Admin Suite
+                      </span>
+                      {pendingOrdersCount > 0 && (
+                        <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
+                          {pendingOrdersCount}
+                        </span>
+                      )}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => navigate('order-tracker')}
+                    className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-2 text-stone-300"
+                  >
+                    <Clock className="w-3.5 h-3.5" />
+                    Track Orders
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      logout();
+                      setUserDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-2 text-rose-300 border-t border-stone-800 mt-1"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => openAuthModal('login')}
+              className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded border border-white/40 text-white hover:bg-white/15 transition-all"
+            >
+              <User className="w-3 h-3" />
+              <span>Sign In</span>
+            </button>
+          )}
+
+          {/* Admin Suite Direct Entry */}
           <button
             onClick={() => navigate('admin')}
             className={`flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded border transition-all ${
@@ -219,7 +294,7 @@ export const Navbar: React.FC = () => {
             </button>
           </nav>
 
-          {/* Right Action: Shop Collection Button (Primary White) */}
+          {/* Right Action: Shop Collection Button */}
           <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={() => navigate('shop')}
@@ -307,6 +382,28 @@ export const Navbar: React.FC = () => {
           </div>
 
           <div className="pt-2 flex flex-col gap-3">
+            {!currentUser ? (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openAuthModal('login');
+                }}
+                className="w-full py-2.5 bg-white/15 border border-white/30 text-white font-bold text-center text-xs uppercase tracking-widest rounded"
+              >
+                Sign In / Register VIP
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  logout();
+                }}
+                className="w-full py-2 bg-rose-500/20 text-rose-200 border border-rose-400/40 text-xs font-semibold rounded"
+              >
+                Sign Out ({currentUser.name})
+              </button>
+            )}
+
             <button
               onClick={() => navigate('shop')}
               className="w-full py-3 bg-white text-[#543D0B] font-bold text-center text-xs uppercase tracking-widest rounded shadow-lg"

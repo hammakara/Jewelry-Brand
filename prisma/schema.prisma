@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id                String    @id
+  name              String
+  nameKhmer         String    @map("name_khmer")
+  slug              String    @unique
+  description       String?
+  descriptionKhmer  String?   @map("description_khmer")
+  image             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  products          Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id                String    @id
+  sku               String
+  name              String
+  nameKhmer         String    @map("name_khmer")
+  categoryId        String    @map("category_id")
+  category          Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  price             Decimal   @db.Decimal(10, 2)
+  originalPrice     Decimal?  @map("original_price") @db.Decimal(10, 2)
+  description       String?
+  descriptionKhmer  String?   @map("description_khmer")
+  pearlType         String    @map("pearl_type")
+  color             String
+  size              String
+  material          String
+  lustre            String
+  availability      String    @default("in_stock")
+  images            Json      @default("[]")
+  isFeatured        Boolean   @default(false) @map("is_featured")
+  isBestseller      Boolean   @default(false) @map("is_bestseller")
+  rating            Decimal   @default(5.0) @db.Decimal(3, 2)
+  reviewCount       Int       @default(0) @map("review_count")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("products")
+}
+
+model Order {
+  id                String    @id
+  productId         String    @map("product_id")
+  productName       String    @map("product_name")
+  productPrice      Decimal   @map("product_price") @db.Decimal(10, 2)
+  productImage      String?   @map("product_image")
+  pearlType         String?   @map("pearl_type")
+  size              String?
+  material          String?
+  quantity          Int       @default(1)
+  totalAmount       Decimal   @map("total_amount") @db.Decimal(10, 2)
+  customerName      String    @map("customer_name")
+  customerPhone     String    @map("customer_phone")
+  customerTelegram  String?   @map("customer_telegram")
+  customerAddress   String    @map("customer_address")
+  customerCity      String    @map("customer_city")
+  notes             String?
+  adminNotes        String?   @map("admin_notes")
+  status            String    @default("PENDING")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("orders")
+}
+
+model StoreSettingsModel {
+  id        Int      @id @default(1)
+  data      Json
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("store_settings")
+}
+
+model User {
+  id           String    @id
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  phone        String?
+  role         String    @default("ADMIN") // ADMIN, STAFF, CUSTOMER
+  avatarUrl    String?   @map("avatar_url")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("users")
+}

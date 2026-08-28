@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useStore } from '../../context/StoreContext';
 import { 
   LayoutDashboard, 
@@ -20,10 +21,12 @@ import { AdminCategories } from './AdminCategories';
 import { AdminOrders } from './AdminOrders';
 import { AdminCustomers } from './AdminCustomers';
 import { AdminSettings } from './AdminSettings';
+import { AdminTeamSecurity } from './AdminTeamSecurity';
 import { AdminLoginModal } from './AdminLoginModal';
+import { ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
-  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders } = useStore();
+  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser } = useStore();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -39,6 +42,7 @@ export const AdminLayout: React.FC = () => {
     { id: 'categories', label: 'Categories', icon: Layers },
     { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, badge: pendingOrderCount },
     { id: 'customers', label: 'Customers (CRM)', icon: Users },
+    { id: 'team', label: 'Team & Security', icon: ShieldCheck },
     { id: 'settings', label: 'Store Settings', icon: Settings },
   ];
 
@@ -124,6 +128,20 @@ export const AdminLayout: React.FC = () => {
 
         {/* Sidebar Footer / Return to Store */}
         <div className="p-4 border-t border-white/20 space-y-2">
+          {currentUser && (
+            <div className="p-2.5 bg-[#3D2B05] rounded-xl border border-white/15 flex items-center gap-2.5 mb-2">
+              <img
+                src={currentUser.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.email}`}
+                alt={currentUser.name}
+                className="w-7 h-7 rounded-full bg-stone-900 border border-white/30 shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="text-[11px] font-bold text-white truncate">{currentUser.name}</div>
+                <div className="text-[9px] text-amber-300 font-semibold uppercase">{currentUser.role}</div>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => setCurrentPage('home')}
             className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white/90 hover:bg-[#3D2B05] hover:text-white transition-colors"
@@ -145,12 +163,23 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Admin Content Canvas */}
       <main className="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl">
-        {activeTab === 'dashboard' && <AdminDashboardOverview setActiveTab={setActiveTab} />}
-        {activeTab === 'products' && <AdminProducts />}
-        {activeTab === 'categories' && <AdminCategories />}
-        {activeTab === 'orders' && <AdminOrders />}
-        {activeTab === 'customers' && <AdminCustomers />}
-        {activeTab === 'settings' && <AdminSettings />}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {activeTab === 'dashboard' && <AdminDashboardOverview setActiveTab={setActiveTab} />}
+            {activeTab === 'products' && <AdminProducts />}
+            {activeTab === 'categories' && <AdminCategories />}
+            {activeTab === 'orders' && <AdminOrders />}
+            {activeTab === 'customers' && <AdminCustomers />}
+            {activeTab === 'team' && <AdminTeamSecurity />}
+            {activeTab === 'settings' && <AdminSettings />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
     </div>

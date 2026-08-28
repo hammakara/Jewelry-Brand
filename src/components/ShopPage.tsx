@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useStore } from '../context/StoreContext';
 import { 
   Sparkles, 
@@ -9,7 +9,9 @@ import {
   ShoppingBag, 
   Star, 
   X, 
-  ChevronDown 
+  ChevronDown,
+  DollarSign,
+  RotateCcw
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PearlType, Product } from '../types';
@@ -30,7 +32,29 @@ export const ShopPage: React.FC = () => {
   const [selectedPearlType, setSelectedPearlType] = useState<string>('all');
   const [selectedMaterial, setSelectedMaterial] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'newest'>('featured');
-  const [maxPrice, setMaxPrice] = useState<number>(600);
+
+  // Dynamic catalog price limits
+  const catalogMinPrice = useMemo(() => {
+    if (!products.length) return 0;
+    return Math.floor(Math.min(...products.map((p) => p.price)));
+  }, [products]);
+
+  const catalogMaxPrice = useMemo(() => {
+    if (!products.length) return 1000;
+    return Math.ceil(Math.max(...products.map((p) => p.price)));
+  }, [products]);
+
+  const [minPrice, setMinPrice] = useState<number>(0);
+  const [maxPrice, setMaxPrice] = useState<number>(1000);
+  const [isPriceCustomized, setIsPriceCustomized] = useState(false);
+
+  // Initialize and synchronize default price bounds with loaded products
+  useEffect(() => {
+    if (products.length > 0 && !isPriceCustomized) {
+      setMinPrice(catalogMinPrice);
+      setMaxPrice(catalogMaxPrice);
+    }
+  }, [catalogMinPrice, catalogMaxPrice, products.length, isPriceCustomized]);
 
   // Find active category ID from slug
   const activeCategoryId = useMemo(() => {
@@ -53,9 +77,11 @@ export const ShopPage: React.FC = () => {
       if (selectedMaterial !== 'all' && p.material !== selectedMaterial) {
         return false;
       }
-      // Price filter
-      if (p.price > maxPrice) {
-        return false;
+      // Price Range filter
+      if (isPriceCustomized) {
+        if (p.price < minPrice || p.price > maxPrice) {
+          return false;
+        }
       }
       // Search filter
       if (searchQuery.trim()) {
@@ -76,7 +102,7 @@ export const ShopPage: React.FC = () => {
       if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
     });
-  }, [products, activeCategoryId, selectedPearlType, selectedMaterial, maxPrice, searchQuery, sortBy]);
+  }, [products, activeCategoryId, selectedPearlType, selectedMaterial, isPriceCustomized, minPrice, maxPrice, searchQuery, sortBy]);
 
   const pearlTypes: Array<{ label: string; value: string }> = [
     { label: 'All Pearls', value: 'all' },
@@ -86,6 +112,41 @@ export const ShopPage: React.FC = () => {
     { label: 'South Sea (សមុទ្រខាងត្បូង)', value: 'South Sea' },
     { label: 'Baroque (គុជរាងសេរី)', value: 'Baroque' },
   ];
+
+  const handleMaxPriceChange = (value: number) => {
+    setIsPriceCustomized(true);
+    setMaxPrice(value);
+    if (value < minPrice) {
+      setMinPrice(catalogMinPrice);
+    }
+  };
+
+  const handleApplyPreset = (min: number, max: number) => {
+    setIsPriceCustomized(true);
+    setMinPrice(min);
+    setMaxPrice(max);
+  };
+
+  const handleResetPrice = () => {
+    setIsPriceCustomized(false);
+    setMinPrice(catalogMinPrice);
+    setMaxPrice(catalogMaxPrice);
+  };
+
+  const handleResetAllFilters = () => {
+    setSelectedCategorySlug(null);
+    setSelectedPearlType('all');
+    setSelectedMaterial('all');
+    setSearchQuery('');
+    setSortBy('featured');
+    handleResetPrice();
+  };
+
+  const sliderPercent = catalogMaxPrice > catalogMinPrice
+    ? Math.min(100, Math.max(0, ((maxPrice - catalogMinPrice) / (catalogMaxPrice - catalogMinPrice)) * 100))
+    : 100;
+
+  const isAnyFilterActive = selectedCategorySlug || selectedPearlType !== 'all' || searchQuery || sortBy !== 'featured' || isPriceCustomized;
 
   return (
     <div className="min-h-screen bg-[#7B5B12] text-white py-12 px-4 sm:px-6 lg:px-8">
@@ -146,7 +207,7 @@ export const ShopPage: React.FC = () => {
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="bg-[#523B08] border border-white/20 rounded-2xl p-4 sm:p-6 shadow-md space-y-4">
+        <div className="bg-[#523B08] border border-white/20 rounded-2xl p-4 sm:p-6 shadow-md space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
             
             {/* Search Input */}
@@ -198,24 +259,171 @@ export const ShopPage: React.FC = () => {
 
           </div>
 
-          {/* Quick Active Filters Summary & Reset */}
-          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/15 text-xs text-white/80">
-            <div>
-              Showing <strong className="text-white font-bold">{filteredProducts.length}</strong> of {products.length} luxury pieces
+          {/* Dynamic Price Range Slider & Budget Filter */}
+          <div className="bg-[#3D2B05]/80 border border-white/15 rounded-xl p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="w-4 h-4 text-amber-300" />
+                <span className="text-xs font-bold uppercase tracking-wider text-white">
+                  {language === 'en' ? 'Budget & Price Filter' : 'កម្រិតថវិកា និងតម្លៃ'}
+                </span>
+                {isPriceCustomized && (
+                  <span className="text-[10px] bg-amber-400/20 text-amber-200 border border-amber-400/40 px-2 py-0.5 rounded-full font-semibold">
+                    Active
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-xs font-bold text-white flex items-center justify-end gap-1">
+                    <span className="text-white/70 font-normal">{language === 'en' ? 'Max Budget:' : 'ថវិកាអតិបរមា:'}</span>
+                    <span className="text-sm font-extrabold text-white">${maxPrice}</span>
+                  </div>
+                  <div className="text-[10px] text-white/60">
+                    ~{(maxPrice * settings.exchangeRateKhr).toLocaleString()} KHR
+                  </div>
+                </div>
+
+                {isPriceCustomized && (
+                  <button
+                    onClick={handleResetPrice}
+                    className="p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-[10px] flex items-center gap-1 font-semibold"
+                    title="Reset Price Filter"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                    <span className="hidden sm:inline">Reset</span>
+                  </button>
+                )}
+              </div>
             </div>
 
-            {(selectedCategorySlug || selectedPearlType !== 'all' || searchQuery || sortBy !== 'featured') && (
+            {/* Slider Control */}
+            <div className="space-y-2">
+              <div className="relative pt-1">
+                <input
+                  type="range"
+                  min={catalogMinPrice}
+                  max={catalogMaxPrice}
+                  step={5}
+                  value={maxPrice}
+                  onChange={(e) => handleMaxPriceChange(Number(e.target.value))}
+                  style={{
+                    background: `linear-gradient(to right, #ffffff ${sliderPercent}%, rgba(255,255,255,0.15) ${sliderPercent}%)`,
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer accent-white border border-white/20 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] text-white/60 font-semibold">
+                <span>Min: ${catalogMinPrice}</span>
+                <span className="text-white/90">
+                  {language === 'en' 
+                    ? `Showing pieces up to $${maxPrice}` 
+                    : `បង្ហាញគ្រឿងអលង្ការរហូតដល់ $${maxPrice}`}
+                </span>
+                <span>Max: ${catalogMaxPrice}+</span>
+              </div>
+            </div>
+
+            {/* Quick Budget Presets */}
+            <div className="pt-2 border-t border-white/10 flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <span className="text-[11px] text-white/70 mr-1 font-semibold">
+                {language === 'en' ? 'Quick Budgets:' : 'ជ្រើសរើសរហ័ស:'}
+              </span>
+              
               <button
-                onClick={() => {
-                  setSelectedCategorySlug(null);
-                  setSelectedPearlType('all');
-                  setSearchQuery('');
-                  setSortBy('featured');
-                }}
+                type="button"
+                onClick={handleResetPrice}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  !isPriceCustomized
+                    ? 'bg-white text-[#523D0C] shadow-sm font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/10'
+                }`}
+              >
+                {language === 'en' ? 'All Prices' : 'ទាំងអស់'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyPreset(catalogMinPrice, 100)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  isPriceCustomized && maxPrice === 100 && minPrice === catalogMinPrice
+                    ? 'bg-white text-[#523D0C] shadow-sm font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/10'
+                }`}
+              >
+                Under $100
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyPreset(100, 250)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  isPriceCustomized && minPrice === 100 && maxPrice === 250
+                    ? 'bg-white text-[#523D0C] shadow-sm font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/10'
+                }`}
+              >
+                $100 – $250
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyPreset(250, 500)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  isPriceCustomized && minPrice === 250 && maxPrice === 500
+                    ? 'bg-white text-[#523D0C] shadow-sm font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/10'
+                }`}
+              >
+                $250 – $500
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyPreset(500, catalogMaxPrice)}
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  isPriceCustomized && minPrice === 500 && maxPrice === catalogMaxPrice
+                    ? 'bg-white text-[#523D0C] shadow-sm font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white/90 border border-white/10'
+                }`}
+              >
+                $500 & Above
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Active Filters Summary & Reset */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/15 text-xs text-white/80">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span>
+                Showing <strong className="text-white font-bold">{filteredProducts.length}</strong> of {products.length} luxury pieces
+              </span>
+
+              {isPriceCustomized && (
+                <span className="inline-flex items-center gap-1 bg-white/15 text-white text-[11px] font-semibold px-2 py-0.5 rounded-md">
+                  <span>
+                    Price: {minPrice > catalogMinPrice ? `$${minPrice} - ` : ''}≤ ${maxPrice}
+                  </span>
+                  <button 
+                    onClick={handleResetPrice}
+                    className="hover:text-amber-200"
+                    title="Remove price constraint"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              )}
+            </div>
+
+            {isAnyFilterActive && (
+              <button
+                onClick={handleResetAllFilters}
                 className="text-white hover:underline font-bold flex items-center gap-1"
               >
                 <X className="w-3.5 h-3.5 text-white" />
-                <span>Reset Filters</span>
+                <span>Reset All Filters</span>
               </button>
             )}
           </div>
