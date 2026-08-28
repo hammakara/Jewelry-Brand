@@ -17,6 +17,7 @@ import { OrderModal } from './components/OrderModal';
 import { PearlGuideModal } from './components/PearlGuideModal';
 import { OrderTracker } from './components/OrderTracker';
 import { AuthModal } from './components/AuthModal';
+import { ChangePasswordModal } from './components/ChangePasswordModal';
 import { ToastContainer } from './components/ToastContainer';
 
 const MainContent: React.FC = () => {
@@ -28,7 +29,13 @@ const MainContent: React.FC = () => {
 
   // When inside Admin, render AdminLayout independently
   if (currentPage === 'admin') {
-    return <AdminLayout />;
+    return (
+      <>
+        <AdminLayout />
+        <ChangePasswordModal />
+        <ToastContainer />
+      </>
+    );
   }
 
   return (
@@ -77,6 +84,7 @@ const MainContent: React.FC = () => {
       <PearlGuideModal />
       <OrderTracker />
       <AuthModal />
+      <ChangePasswordModal />
       <ToastContainer />
     </div>
   );

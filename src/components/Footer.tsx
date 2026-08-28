@@ -230,7 +230,7 @@ export const Footer: React.FC = () => {
 
         </div>
 
-        {/* Bottom copyright & admin access */}
+        {/* Bottom copyright */}
         <div className="mt-12 pt-8 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/70">
           <div className="flex items-center gap-2">
             <span>&copy; {new Date().getFullYear()} ប្រណិត (PRANITH) Luxury Pearl Boutique. All Rights Reserved.</span>
@@ -238,13 +238,6 @@ export const Footer: React.FC = () => {
 
           <div className="flex items-center gap-4">
             <span className="text-[11px] text-white/70">Boutique Haute Joaillerie</span>
-            <button
-              onClick={() => navigate('admin')}
-              className="text-white font-bold hover:underline flex items-center gap-1 text-[11px]"
-            >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Admin Management</span>
-            </button>
           </div>
         </div>
       </div>

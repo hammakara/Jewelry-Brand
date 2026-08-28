@@ -40,6 +40,10 @@ interface StoreContextType {
   setAuthModalTab: (tab: 'login' | 'register') => void;
   openAuthModal: (tab?: 'login' | 'register') => void;
   closeAuthModal: () => void;
+  isChangePasswordModalOpen: boolean;
+  setIsChangePasswordModalOpen: (open: boolean) => void;
+  openChangePasswordModal: () => void;
+  closeChangePasswordModal: () => void;
 
   // Authentication Actions
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
@@ -134,6 +138,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState<boolean>(false);
 
   const openAuthModal = (tab: 'login' | 'register' = 'login') => {
     setAuthModalTab(tab);
@@ -144,9 +149,17 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIsAuthModalOpen(false);
   };
 
-  // Compute isAdminLoggedIn from authenticated user role (ADMIN or STAFF) or legacy session
+  const openChangePasswordModal = () => {
+    setIsChangePasswordModalOpen(true);
+  };
+
+  const closeChangePasswordModal = () => {
+    setIsChangePasswordModalOpen(false);
+  };
+
+  // Compute isAdminLoggedIn from authenticated user role (ADMIN)
   const isAdminLoggedIn = useMemo(() => {
-    if (currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'STAFF')) {
+    if (currentUser && currentUser.role === 'ADMIN') {
       return true;
     }
     return false;
@@ -857,6 +870,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setAuthModalTab,
         openAuthModal,
         closeAuthModal,
+        isChangePasswordModalOpen,
+        setIsChangePasswordModalOpen,
+        openChangePasswordModal,
+        closeChangePasswordModal,
         login,
         register,
         logout,

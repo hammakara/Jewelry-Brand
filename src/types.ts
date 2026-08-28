@@ -100,7 +100,7 @@ export interface AuthUser {
   email: string;
   name: string;
   phone?: string | null;
-  role: 'ADMIN' | 'STAFF' | 'CUSTOMER';
+  role: 'ADMIN' | 'CUSTOMER';
   avatarUrl?: string;
   createdAt: string;
 }

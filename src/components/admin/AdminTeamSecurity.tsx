@@ -13,7 +13,7 @@ export const AdminTeamSecurity: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'ADMIN' | 'STAFF'>('STAFF');
+  const [role, setRole] = useState<'ADMIN' | 'CUSTOMER'>('ADMIN');
   const [phone, setPhone] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -152,11 +152,11 @@ export const AdminTeamSecurity: React.FC = () => {
           <div className="flex items-center gap-2 mb-1">
             <ShieldCheck className="w-5 h-5 text-amber-300" />
             <h2 className="font-display-luxury text-xl font-bold text-white tracking-wide">
-              Team Access & Role-Based Security
+              User Accounts & Role-Based Security
             </h2>
           </div>
           <p className="text-xs text-white/80 max-w-xl">
-            Manage authenticated administrators and staff members with access to boutique products, inventory, order processing, and store configuration.
+            Manage authenticated users with the two system roles: Administrator (full management suite access) and Customer (VIP storefront & order tracker).
           </p>
         </div>
 
@@ -175,7 +175,7 @@ export const AdminTeamSecurity: React.FC = () => {
               className="px-4 py-2.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center gap-2"
             >
               <UserPlus className="w-4 h-4 text-[#523D0C]" />
-              <span>Add Staff Member</span>
+              <span>Add User Account</span>
             </button>
           )}
         </div>
@@ -310,8 +310,8 @@ export const AdminTeamSecurity: React.FC = () => {
                 onChange={(e) => setRole(e.target.value as any)}
                 className="w-full bg-[#3D2B05] border border-white/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-white"
               >
-                <option value="STAFF">STAFF (Products & Order Management)</option>
-                <option value="ADMIN">ADMIN (Full Superuser Privileges)</option>
+                <option value="ADMIN">ADMIN (Full Store & Order Management Access)</option>
+                <option value="CUSTOMER">CUSTOMER (Normal Client User)</option>
               </select>
             </div>
 
@@ -401,11 +401,9 @@ export const AdminTeamSecurity: React.FC = () => {
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
                         u.role === 'ADMIN'
                           ? 'bg-amber-400 text-stone-950 shadow-sm'
-                          : u.role === 'STAFF'
-                          ? 'bg-sky-400/20 text-sky-200 border border-sky-400/40'
                           : 'bg-emerald-400/20 text-emerald-200 border border-emerald-400/40'
                       }`}>
-                        {u.role}
+                        {u.role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER'}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-white/70">{u.phone || '—'}</td>

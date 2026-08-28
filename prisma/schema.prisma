@@ -90,7 +90,7 @@ model User {
   passwordHash String    @map("password_hash")
   name         String
   phone        String?
-  role         String    @default("ADMIN") // ADMIN, STAFF, CUSTOMER
+  role         String    @default("CUSTOMER") // ADMIN or CUSTOMER
   avatarUrl    String?   @map("avatar_url")
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")

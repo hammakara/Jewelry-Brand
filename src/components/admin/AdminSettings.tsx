@@ -15,7 +15,7 @@ import {
 import { StoreSettings } from '../../types';
 
 export const AdminSettings: React.FC = () => {
-  const { settings, updateSettings, showToast } = useStore();
+  const { settings, updateSettings, showToast, openChangePasswordModal } = useStore();
 
   const [formData, setFormData] = useState<StoreSettings>({ ...settings });
   const [newPasscode, setNewPasscode] = useState('');
@@ -183,15 +183,31 @@ export const AdminSettings: React.FC = () => {
           </div>
         </div>
 
-        {/* Security & Admin Passcode */}
+        {/* Security & Admin Credentials */}
         <div className="bg-[#523B08] border border-white/20 rounded-2xl p-6 space-y-4 shadow-xl">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            Admin Passcode Security
-          </h3>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-white">
+                Admin Password & Credentials
+              </h3>
+              <p className="text-xs text-white/70 mt-0.5">
+                Update your administrator account password or system fallback passcode.
+              </p>
+            </div>
 
-          <div className="max-w-xs">
+            <button
+              type="button"
+              onClick={openChangePasswordModal}
+              className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shadow-md shrink-0"
+            >
+              <KeyRound className="w-4 h-4" />
+              <span>Change My Password</span>
+            </button>
+          </div>
+
+          <div className="max-w-xs pt-2 border-t border-white/10">
             <label className="block text-xs font-bold text-white mb-1">
-              New Admin Passcode (leave blank to keep current)
+              Fallback Passcode (leave blank to keep current)
             </label>
             <input
               type="password"

@@ -83,9 +83,9 @@ async function startServer() {
         return res.status(409).json({ error: 'An account with this email address already exists.' });
       }
 
-      // First registered user becomes ADMIN if no admins exist
+      // First registered user becomes ADMIN if no admins exist; all subsequent users register as CUSTOMER by default
       const adminCount = await prisma.user.count({ where: { role: 'ADMIN' } });
-      const assignedRole = adminCount === 0 ? 'ADMIN' : (role || 'STAFF');
+      const assignedRole = adminCount === 0 ? 'ADMIN' : (role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER');
 
       const passwordHash = await hashPassword(password);
       const userId = `usr-${Date.now()}`;
@@ -326,7 +326,7 @@ async function startServer() {
           passwordHash,
           name: name.trim(),
           phone: phone ? phone.trim() : null,
-          role: role || 'STAFF',
+          role: role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER',
           avatarUrl: `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(normalizedEmail)}`,
         },
         select: {
@@ -381,7 +381,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/categories', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/categories', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id, name, nameKhmer, slug, description, descriptionKhmer, image } = req.body;
       const catId = id || `cat-${Date.now()}`;
@@ -403,7 +403,7 @@ async function startServer() {
     }
   });
 
-  app.put('/api/categories/:id', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/categories/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { name, nameKhmer, slug, description, descriptionKhmer, image } = req.body;
@@ -478,7 +478,7 @@ async function startServer() {
     }
   });
 
-  app.post('/api/products', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/products', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const {
         id, sku, name, nameKhmer, categoryId, price, originalPrice,
@@ -542,7 +542,7 @@ async function startServer() {
     }
   });
 
-  app.put('/api/products/:id', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.put('/api/products/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const {
@@ -620,9 +620,9 @@ async function startServer() {
   });
 
   // ==========================================
-  // --- ORDERS (Public Create, Protected Admin/Staff View & Update) ---
+  // --- ORDERS (Public Create, Protected Admin View & Update) ---
   // ==========================================
-  app.get('/api/orders', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/orders', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const orders = await prisma.order.findMany({
         orderBy: { createdAt: 'desc' },
@@ -723,7 +723,7 @@ async function startServer() {
     }
   });
 
-  app.patch('/api/orders/:id', authenticateToken, requireRole('ADMIN', 'STAFF'), async (req: AuthenticatedRequest, res: Response) => {
+  app.patch('/api/orders/:id', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const { id } = req.params;
       const { status, adminNotes } = req.body;

@@ -13,7 +13,8 @@ import {
   Sparkles, 
   ExternalLink,
   Menu,
-  X
+  X,
+  KeyRound
 } from 'lucide-react';
 import { AdminDashboardOverview } from './AdminDashboardOverview';
 import { AdminProducts } from './AdminProducts';
@@ -26,7 +27,7 @@ import { AdminLoginModal } from './AdminLoginModal';
 import { ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
-  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser } = useStore();
+  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser, openChangePasswordModal } = useStore();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -42,7 +43,7 @@ export const AdminLayout: React.FC = () => {
     { id: 'categories', label: 'Categories', icon: Layers },
     { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, badge: pendingOrderCount },
     { id: 'customers', label: 'Customers (CRM)', icon: Users },
-    { id: 'team', label: 'Team & Security', icon: ShieldCheck },
+    { id: 'team', label: 'Users & Security', icon: ShieldCheck },
     { id: 'settings', label: 'Store Settings', icon: Settings },
   ];
 
@@ -129,18 +130,36 @@ export const AdminLayout: React.FC = () => {
         {/* Sidebar Footer / Return to Store */}
         <div className="p-4 border-t border-white/20 space-y-2">
           {currentUser && (
-            <div className="p-2.5 bg-[#3D2B05] rounded-xl border border-white/15 flex items-center gap-2.5 mb-2">
-              <img
-                src={currentUser.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.email}`}
-                alt={currentUser.name}
-                className="w-7 h-7 rounded-full bg-stone-900 border border-white/30 shrink-0"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-bold text-white truncate">{currentUser.name}</div>
-                <div className="text-[9px] text-amber-300 font-semibold uppercase">{currentUser.role}</div>
+            <div className="p-2.5 bg-[#3D2B05] rounded-xl border border-white/15 flex items-center justify-between gap-2 mb-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src={currentUser.avatarUrl || `https://api.dicebear.com/7.x/bottts/svg?seed=${currentUser.email}`}
+                  alt={currentUser.name}
+                  className="w-7 h-7 rounded-full bg-stone-900 border border-white/30 shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-bold text-white truncate">{currentUser.name}</div>
+                  <div className="text-[9px] text-amber-300 font-semibold uppercase">{currentUser.role}</div>
+                </div>
               </div>
+
+              <button
+                onClick={openChangePasswordModal}
+                title="Change My Password"
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-amber-200 transition-colors shrink-0"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+              </button>
             </div>
           )}
+
+          <button
+            onClick={openChangePasswordModal}
+            className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-amber-200 hover:bg-[#3D2B05] hover:text-white transition-colors"
+          >
+            <KeyRound className="w-4 h-4 text-amber-300" />
+            <span>Change My Password</span>
+          </button>
 
           <button
             onClick={() => setCurrentPage('home')}

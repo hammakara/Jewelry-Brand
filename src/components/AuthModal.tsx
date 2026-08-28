@@ -86,12 +86,12 @@ export const AuthModal: React.FC = () => {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h2 className="font-display-luxury text-xl sm:text-2xl font-bold tracking-wide text-white">
-            {authModalTab === 'login' ? 'Boutique Client & Staff Access' : 'Create VIP Client Account'}
+            {authModalTab === 'login' ? 'Boutique Client & Admin Sign In' : 'Create VIP Customer Account'}
           </h2>
           <p className="text-xs text-stone-400">
             {authModalTab === 'login'
-              ? 'Sign in to access your luxury orders or administrative suite.'
-              : 'Register for personalized concierge, bespoke pearl consultations, and order history.'}
+              ? 'Sign in to access your luxury customer orders or administrative suite.'
+              : 'Register your customer account for order history and personalized concierge services.'}
           </p>
         </div>
 
