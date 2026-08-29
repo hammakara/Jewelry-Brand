@@ -90,31 +90,32 @@ export function requireRole(...allowedRoles: string[]) {
 // Ensure at least one default super admin exists
 export async function ensureDefaultAdmin() {
   try {
-    const adminCount = await prisma.user.count({
-      where: { role: 'ADMIN' },
+    const defaultEmail = 'admin@pranith.luxury';
+    const defaultPassword = 'AdminPassword2026!';
+    const defaultName = 'Pranith Boutique Director';
+    
+    const hashedPassword = await hashPassword(defaultPassword);
+
+    await prisma.user.upsert({
+      where: { id: 'usr-admin-director' },
+      update: {
+        email: defaultEmail,
+        passwordHash: hashedPassword,
+        name: defaultName,
+        role: 'ADMIN',
+      },
+      create: {
+        id: 'usr-admin-director',
+        email: defaultEmail,
+        passwordHash: hashedPassword,
+        name: defaultName,
+        phone: '+855 12 888 999',
+        role: 'ADMIN',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+      },
     });
 
-    if (adminCount === 0) {
-      const defaultEmail = 'admin@pranith.luxury';
-      const defaultPassword = 'AdminPassword2026!';
-      const defaultName = 'Pranith Boutique Director';
-      
-      const hashedPassword = await hashPassword(defaultPassword);
-      
-      await prisma.user.create({
-        data: {
-          id: 'usr-admin-director',
-          email: defaultEmail,
-          passwordHash: hashedPassword,
-          name: defaultName,
-          phone: '+855 12 888 999',
-          role: 'ADMIN',
-          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-        },
-      });
-
-      console.log(`[Auth] Created default Super Admin: ${defaultEmail} / ${defaultPassword}`);
-    }
+    console.log(`[Auth] Verified default Super Admin: ${defaultEmail} (${defaultPassword})`);
   } catch (error) {
     console.error('[Auth] Error ensuring default admin:', error);
   }

@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { ensureDefaultAdmin } from './auth';
 
@@ -7,7 +8,13 @@ if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = DEFAULT_DATABASE_URL;
 }
 
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DATABASE_URL || DEFAULT_DATABASE_URL,
+    },
+  },
+});
 
 export async function initPrismaDatabase() {
   try {

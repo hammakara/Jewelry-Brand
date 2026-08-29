@@ -243,6 +243,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return headers;
   };
 
+  // Safe JSON parser to prevent "Unexpected token ... is not valid JSON" errors
+  const safeParseJson = async (res: Response): Promise<any> => {
+    try {
+      const text = await res.text();
+      if (!text || text.trim().length === 0) return {};
+      try {
+        return JSON.parse(text);
+      } catch {
+        return { error: `Server error (${res.status}): Please try again.` };
+      }
+    } catch (err: any) {
+      return { error: err?.message || 'Network communication error.' };
+    }
+  };
+
   // Verify stored JWT token on startup
   useEffect(() => {
     async function verifyStoredAuth() {
@@ -252,9 +267,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           headers: { Authorization: `Bearer ${authToken}` },
         });
         if (res.ok) {
-          const user = await res.json();
-          setCurrentUser(user);
-          localStorage.setItem('mdp_auth_user', JSON.stringify(user));
+          const user = await safeParseJson(res);
+          if (user && user.id) {
+            setCurrentUser(user);
+            localStorage.setItem('mdp_auth_user', JSON.stringify(user));
+          }
         } else {
           // Token expired or invalid
           console.warn('Session expired. Logging out.');
@@ -279,8 +296,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Health check
         const healthRes = await fetch('/api/health');
         if (healthRes.ok) {
-          const healthData = await healthRes.json();
-          if (healthData.connected) {
+          const healthData = await safeParseJson(healthRes);
+          if (healthData && healthData.connected) {
             setIsDbConnected(true);
           }
         }
@@ -293,7 +310,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         ]);
 
         if (catRes.ok) {
-          const catData = await catRes.json();
+          const catData = await safeParseJson(catRes);
           if (Array.isArray(catData) && catData.length > 0) {
             setCategories(catData);
             localStorage.setItem('mdp_categories_v1', JSON.stringify(catData));
@@ -301,7 +318,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         if (prodRes.ok) {
-          const prodData = await prodRes.json();
+          const prodData = await safeParseJson(prodRes);
           if (Array.isArray(prodData) && prodData.length > 0) {
             setProducts(prodData);
             localStorage.setItem('mdp_products_v1', JSON.stringify(prodData));
@@ -309,8 +326,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
 
         if (setRes.ok) {
-          const setData = await setRes.json();
-          if (setData && typeof setData === 'object') {
+          const setData = await safeParseJson(setRes);
+          if (setData && typeof setData === 'object' && !setData.error) {
             setSettings(setData);
             localStorage.setItem('mdp_settings_v1', JSON.stringify(setData));
           }
@@ -322,7 +339,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             headers: { Authorization: `Bearer ${authToken}` },
           });
           if (ordRes.ok) {
-            const ordData = await ordRes.json();
+            const ordData = await safeParseJson(ordRes);
             if (Array.isArray(ordData)) {
               setOrders(ordData);
               localStorage.setItem('mdp_orders_v1', JSON.stringify(ordData));
@@ -416,9 +433,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await res.json();
+      const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data.error || 'Authentication failed' };
+        return { success: false, error: data?.error || 'Authentication failed. Please verify your credentials.' };
+      }
+
+      if (!data?.token || !data?.user) {
+        return { success: false, error: data?.error || 'Invalid server authentication response.' };
       }
 
       setAuthToken(data.token);
@@ -435,7 +456,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           headers: { Authorization: `Bearer ${data.token}` },
         });
         if (ordRes.ok) {
-          const ordData = await ordRes.json();
+          const ordData = await safeParseJson(ordRes);
           if (Array.isArray(ordData)) {
             setOrders(ordData);
           }
@@ -465,9 +486,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(userData),
       });
 
-      const data = await res.json();
+      const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data.error || 'Registration failed' };
+        return { success: false, error: data?.error || 'Registration failed. Please try again.' };
+      }
+
+      if (!data?.token || !data?.user) {
+        return { success: false, error: data?.error || 'Registration response invalid.' };
       }
 
       setAuthToken(data.token);
@@ -501,9 +526,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
       });
-      const updatedUser = await res.json();
+      const updatedUser = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: updatedUser.error || 'Failed to update profile' };
+        return { success: false, error: updatedUser?.error || 'Failed to update profile' };
       }
       setCurrentUser(updatedUser);
       localStorage.setItem('mdp_auth_user', JSON.stringify(updatedUser));
@@ -522,9 +547,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         headers: getAuthHeaders(),
         body: JSON.stringify({ currentPassword, newPassword }),
       });
-      const data = await res.json();
+      const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data.error || 'Failed to change password' };
+        return { success: false, error: data?.error || 'Failed to change password' };
       }
       showToast('Password changed successfully.', 'success');
       return { success: true };
@@ -566,9 +591,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(created),
       });
       if (res.ok) {
-        const savedProd = await res.json();
-        setProducts((prev) => prev.map((p) => (p.id === tempId ? savedProd : p)));
-        showToast(`Product "${savedProd.name}" saved securely!`, 'success');
+        const savedProd = await safeParseJson(res);
+        if (savedProd && savedProd.id) {
+          setProducts((prev) => prev.map((p) => (p.id === tempId ? savedProd : p)));
+          showToast(`Product "${savedProd.name}" saved securely!`, 'success');
+        }
       } else {
         showToast(`Product "${created.name}" created locally.`, 'info');
       }
@@ -590,9 +617,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(updated),
       });
       if (res.ok) {
-        const saved = await res.json();
-        setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
-        showToast('Product updated in Neon database.', 'info');
+        const saved = await safeParseJson(res);
+        if (saved && saved.id) {
+          setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
+          showToast('Product updated in Neon database.', 'info');
+        }
       }
     } catch (err) {
       console.error('Error updating product on backend:', err);
@@ -630,9 +659,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(created),
       });
       if (res.ok) {
-        const saved = await res.json();
-        setCategories((prev) => prev.map((c) => (c.id === tempId ? saved : c)));
-        showToast(`Category "${saved.name}" saved to Neon database.`, 'success');
+        const saved = await safeParseJson(res);
+        if (saved && saved.id) {
+          setCategories((prev) => prev.map((c) => (c.id === tempId ? saved : c)));
+          showToast(`Category "${saved.name}" saved to Neon database.`, 'success');
+        }
       }
     } catch (err) {
       console.error('Error adding category on backend:', err);
@@ -652,9 +683,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(updated),
       });
       if (res.ok) {
-        const saved = await res.json();
-        setCategories((prev) => prev.map((c) => (c.id === id ? saved : c)));
-        showToast('Category updated in database.', 'info');
+        const saved = await safeParseJson(res);
+        if (saved && saved.id) {
+          setCategories((prev) => prev.map((c) => (c.id === id ? saved : c)));
+          showToast('Category updated in database.', 'info');
+        }
       }
     } catch (err) {
       console.error('Error updating category on backend:', err);
@@ -728,9 +761,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(newOrder),
       });
       if (res.ok) {
-        const savedOrder = await res.json();
-        setOrders((prev) => prev.map((o) => (o.id === newOrder.id ? savedOrder : o)));
-        setLastCreatedOrder(savedOrder);
+        const savedOrder = await safeParseJson(res);
+        if (savedOrder && savedOrder.id) {
+          setOrders((prev) => prev.map((o) => (o.id === newOrder.id ? savedOrder : o)));
+          setLastCreatedOrder(savedOrder);
+        }
       }
     } catch (err) {
       console.error('Error saving order to backend:', err);
@@ -807,8 +842,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         body: JSON.stringify(updated),
       });
       if (res.ok) {
-        const saved = await res.json();
-        setSettings(saved);
+        const saved = await safeParseJson(res);
+        if (saved && typeof saved === 'object' && !saved.error) {
+          setSettings(saved);
+        }
       }
     } catch (err) {
       console.error('Error saving settings to backend:', err);
