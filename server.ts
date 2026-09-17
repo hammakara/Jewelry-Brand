@@ -5,7 +5,7 @@ import { createServer as createViteServer } from 'vite';
 import { app } from './server/app';
 import { initPrismaDatabase } from './server/prismaDb';
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 async function startServer() {
   // Initialize Prisma & Neon Database connection

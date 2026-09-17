@@ -1,9 +1,11 @@
 import pg from 'pg';
 const { Pool } = pg;
 
-const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_LhsE7QOG5Pab@ep-lingering-term-aysveogv-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
+const connectionString = process.env.DATABASE_URL;
 
-const connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL;
+if (!connectionString) {
+  console.warn('[DB] DATABASE_URL not set. Please configure it in your .env file.');
+}
 
 export const pool = new Pool({
   connectionString,

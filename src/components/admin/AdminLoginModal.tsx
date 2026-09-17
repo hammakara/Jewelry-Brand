@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { ShieldCheck, Mail, Lock, Sparkles, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export const AdminLoginModal: React.FC = () => {
   const { login, setCurrentPage } = useStore();
@@ -20,18 +20,6 @@ export const AdminLoginModal: React.FC = () => {
 
     if (!result.success) {
       setErrorMessage(result.error || 'Invalid credentials. Please verify your email and password.');
-    }
-  };
-
-  const handleQuickDemoAccess = async () => {
-    setEmail('admin@pranith.luxury');
-    setPassword('AdminPassword2026!');
-    setErrorMessage(null);
-    setLoading(true);
-    const result = await login('admin@pranith.luxury', 'AdminPassword2026!');
-    setLoading(false);
-    if (!result.success) {
-      setErrorMessage(result.error || 'Failed to authenticate with demo credentials.');
     }
   };
 
@@ -122,18 +110,9 @@ export const AdminLoginModal: React.FC = () => {
           </button>
         </form>
 
-        {/* Quick Demo Access Button */}
-        <div className="pt-3 border-t border-stone-800 space-y-3">
-          <button
-            type="button"
-            onClick={handleQuickDemoAccess}
-            disabled={loading}
-            className="w-full py-2.5 bg-stone-800/80 hover:bg-amber-500/10 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition shadow-sm"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>1-Click Super Admin Instant Login</span>
-          </button>
+        {/* Demo Access Removed - Default admin password is set via ADMIN_PASSWORD env var on first run. */}
 
+        <div className="pt-3 border-t border-stone-800 space-y-3">
           <button
             type="button"
             onClick={() => setCurrentPage('home')}

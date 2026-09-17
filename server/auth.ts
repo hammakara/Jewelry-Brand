@@ -3,7 +3,10 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { prisma } from './prismaDb';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pranith_pearl_luxury_boutique_jwt_secret_key_2026_secure';
+if (!process.env.JWT_SECRET) {
+  console.warn('[Auth] JWT_SECRET not set. Please configure it in your .env file.');
+}
+const JWT_SECRET = process.env.JWT_SECRET!;
 const TOKEN_EXPIRY = '7d';
 
 export interface TokenPayload {
@@ -90,21 +93,26 @@ export function requireRole(...allowedRoles: string[]) {
 // Ensure at least one default super admin exists
 export async function ensureDefaultAdmin() {
   try {
-    const defaultEmail = 'admin@pranith.luxury';
-    const defaultPassword = 'AdminPassword2026!';
+    const defaultEmail = process.env.ADMIN_EMAIL || 'admin@pranith.luxury';
+    const defaultPassword = process.env.ADMIN_PASSWORD;
     const defaultName = 'Pranith Boutique Director';
-    
+
+    const existingAdmin = await prisma.user.findUnique({ where: { id: 'usr-admin-director' } });
+
+    if (existingAdmin) {
+      console.log(`[Auth] Default Super Admin already exists: ${defaultEmail}`);
+      return;
+    }
+
+    if (!defaultPassword) {
+      console.warn('[Auth] ADMIN_PASSWORD not set. Skipping default admin creation. Set it in .env to create the initial admin.');
+      return;
+    }
+
     const hashedPassword = await hashPassword(defaultPassword);
 
-    await prisma.user.upsert({
-      where: { id: 'usr-admin-director' },
-      update: {
-        email: defaultEmail,
-        passwordHash: hashedPassword,
-        name: defaultName,
-        role: 'ADMIN',
-      },
-      create: {
+    await prisma.user.create({
+      data: {
         id: 'usr-admin-director',
         email: defaultEmail,
         passwordHash: hashedPassword,
@@ -115,7 +123,7 @@ export async function ensureDefaultAdmin() {
       },
     });
 
-    console.log(`[Auth] Verified default Super Admin: ${defaultEmail} (${defaultPassword})`);
+    console.log(`[Auth] Default Super Admin created: ${defaultEmail}`);
   } catch (error) {
     console.error('[Auth] Error ensuring default admin:', error);
   }

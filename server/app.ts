@@ -18,8 +18,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // CORS middleware
+const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+  : [];
+
 app.use((req: Request, res: Response, next: NextFunction) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.length === 0 || (origin && ALLOWED_ORIGINS.includes(origin))) {
+    res.header('Access-Control-Allow-Origin', origin || '*');
+  }
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
   if (req.method === 'OPTIONS') {
@@ -173,34 +180,17 @@ apiRouter.post('/auth/login', async (req: Request, res: Response) => {
     });
 
     // If default super admin does not exist yet in DB, provision or find by ID
-    if (!user && (normalizedEmail === 'admin@pranith.luxury' || normalizedEmail === 'admin@pranith.com')) {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@pranith.luxury';
+    if (!user && normalizedEmail === adminEmail) {
       await ensureDefaultAdmin();
-      user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { email: 'admin@pranith.luxury' },
-            { email: 'admin@pranith.com' },
-            { role: 'ADMIN' },
-          ],
-        },
-      });
+      user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
     }
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password.' });
     }
 
-    let isMatch = await comparePassword(password, user.passwordHash);
-
-    // Support default admin recovery / emergency access with default password or passcode
-    if (!isMatch && user.role === 'ADMIN' && (password === 'AdminPassword2026!' || password === '888888' || password === 'admin123' || password === 'pearl2026')) {
-      const newHash = await hashPassword(password === 'AdminPassword2026!' ? 'AdminPassword2026!' : password);
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { passwordHash: newHash },
-      });
-      isMatch = true;
-    }
+    const isMatch = await comparePassword(password, user.passwordHash);
 
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password.' });

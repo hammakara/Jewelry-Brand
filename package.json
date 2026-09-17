@@ -1,7 +1,7 @@
 {
-  "name": "react-example",
+  "name": "pranith-jewelry",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
@@ -12,11 +12,8 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "@google/genai": "^2.4.0",
     "@prisma/client": "^6.4.1",
     "@tailwindcss/vite": "^4.1.14",
-    "@types/bcryptjs": "^3.0.0",
-    "@types/jsonwebtoken": "^9.0.10",
     "@vitejs/plugin-react": "^5.0.4",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
@@ -26,14 +23,14 @@
     "motion": "^12.23.24",
     "pg": "^8.23.0",
     "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "vite": "^6.2.3"
+    "react-dom": "^19.0.1"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.14.0",
     "@types/pg": "^8.23.1",
-    "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
     "prisma": "^6.4.1",
     "tailwindcss": "^4.1.14",

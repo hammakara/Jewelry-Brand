@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useStore } from '../context/StoreContext';
-import { Lock, Mail, User, Phone, Eye, EyeOff, ShieldCheck, Sparkles, X, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, Phone, Eye, EyeOff, ShieldCheck, X, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export const AuthModal: React.FC = () => {
   const {
@@ -10,7 +10,6 @@ export const AuthModal: React.FC = () => {
     setAuthModalTab,
     login,
     register,
-    setCurrentPage,
   } = useStore();
 
   const [email, setEmail] = useState('');
@@ -50,20 +49,6 @@ export const AuthModal: React.FC = () => {
       if (!result.success) {
         setErrorMessage(result.error || 'Registration failed. Please try again.');
       }
-    }
-  };
-
-  const handleQuickDirectorLogin = async () => {
-    setEmail('admin@pranith.luxury');
-    setPassword('AdminPassword2026!');
-    setErrorMessage(null);
-    setLoading(true);
-    const result = await login('admin@pranith.luxury', 'AdminPassword2026!');
-    setLoading(false);
-    if (result.success) {
-      setCurrentPage('admin');
-    } else {
-      setErrorMessage(result.error || 'Failed to authenticate admin account.');
     }
   };
 
@@ -233,24 +218,6 @@ export const AuthModal: React.FC = () => {
             )}
           </button>
         </form>
-
-        {/* Quick Admin Access Hint */}
-        {authModalTab === 'login' && (
-          <div className="mt-6 pt-4 border-t border-stone-800/80 space-y-2">
-            <div className="text-[11px] text-stone-400 text-center">
-              Demonstration & Management Account:
-            </div>
-            <button
-              type="button"
-              onClick={handleQuickDirectorLogin}
-              disabled={loading}
-              className="w-full py-2 bg-stone-800/90 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 transition"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>1-Click Super Admin Login (Director)</span>
-            </button>
-          </div>
-        )}
 
       </div>
     </div>

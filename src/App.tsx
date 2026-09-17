@@ -72,6 +72,8 @@ const MainContent: React.FC = () => {
             {currentPage === 'about' && <AboutPage />}
 
             {currentPage === 'contact' && <ContactPage />}
+
+            {currentPage === 'order-tracker' && <OrderTracker />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -82,7 +84,6 @@ const MainContent: React.FC = () => {
       {/* Customer Modals & Overlays */}
       <OrderModal />
       <PearlGuideModal />
-      <OrderTracker />
       <AuthModal />
       <ChangePasswordModal />
       <ToastContainer />

@@ -2,19 +2,11 @@ import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import { ensureDefaultAdmin } from './auth';
 
-const DEFAULT_DATABASE_URL = 'postgresql://neondb_owner:npg_LhsE7QOG5Pab@ep-lingering-term-aysveogv-pooler.c-5.us-east-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require';
-
 if (!process.env.DATABASE_URL) {
-  process.env.DATABASE_URL = DEFAULT_DATABASE_URL;
+  console.warn('[Prisma] DATABASE_URL not set. Please configure it in your .env file.');
 }
 
-export const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL || DEFAULT_DATABASE_URL,
-    },
-  },
-});
+export const prisma = new PrismaClient();
 
 export async function initPrismaDatabase() {
   try {

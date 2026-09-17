@@ -51,7 +51,7 @@ interface StoreContextType {
   logout: () => void;
   updateProfile: (data: { name?: string; phone?: string; avatarUrl?: string }) => Promise<{ success: boolean; error?: string }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
-  loginAdmin: (passcode: string) => boolean;
+  loginAdmin: (email: string, password: string) => Promise<boolean>;
   logoutAdmin: () => void;
 
   // Data
@@ -558,13 +558,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const loginAdmin = (passcode: string) => {
-    // Backwards compatibility for quick entrance or direct passcode
-    if (passcode === 'admin123' || passcode === 'pearl2026' || passcode === 'admin') {
-      login('admin@pranith.luxury', 'AdminPassword2026!');
-      return true;
-    }
-    return false;
+  const loginAdmin = async (email: string, password: string) => {
+    return await login(email, password);
   };
 
   const logoutAdmin = () => {
