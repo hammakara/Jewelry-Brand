@@ -12,12 +12,14 @@ import {
   Sparkles, 
   ExternalLink,
   Check,
-  Filter
+  Filter,
+  UploadCloud,
+  Loader2
 } from 'lucide-react';
 import { Product, PearlType, MetalMaterial, PearlColor } from '../../types';
 
 export const AdminProducts: React.FC = () => {
-  const { products, categories, addProduct, updateProduct, deleteProduct, viewProductDetails, language } = useStore();
+  const { products, categories, addProduct, updateProduct, deleteProduct, viewProductDetails, language, authToken } = useStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
@@ -64,6 +66,9 @@ export const AdminProducts: React.FC = () => {
   });
 
   const [customImageUrl, setCustomImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Sample curated pearl photography presets for quick product additions
   const photoPresets = [
@@ -163,6 +168,57 @@ export const AdminProducts: React.FC = () => {
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError(language === 'en' ? 'Please select an image file.' : 'សូមជ្រើសរើសឯកសាររូបភាព។');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      setUploadError(language === 'en' ? 'Image must be under 8 MB.' : 'ទំហំរូបភាពមិនអាចលើស ៨ MB ទេ។');
+      return;
+    }
+
+    setUploadError('');
+    setIsUploading(true);
+
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Failed to read file.'));
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ dataUrl, fileName: file.name }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `Upload failed (${res.status})`);
+      }
+
+      if (data.url) {
+        setFormData((prev) => ({ ...prev, images: [data.url, ...prev.images] }));
+      }
+    } catch (err: any) {
+      console.error('Image upload error:', err);
+      setUploadError(err?.message || (language === 'en' ? 'Upload failed. Check Cloudinary config.' : 'ការទាញយកបរាជ័យ។'));
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -565,6 +621,44 @@ export const AdminProducts: React.FC = () => {
                     {language === 'en' ? 'Add URL' : 'បន្ថែម URL'}
                   </button>
                 </div>
+
+                {/* Or Upload from Device */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-1">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white text-xs font-bold rounded-lg border border-white/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {language === 'en' ? 'Uploading...' : 'កំពុងទាញយក...'}
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4" />
+                        {language === 'en' ? 'Upload Image from Device' : 'ទាញយករូបភាពពីឧបករណ៍'}
+                      </>
+                    )}
+                  </button>
+                  <span className="text-[10px] text-white/60">
+                    {language === 'en' ? 'JPG / PNG / WEBP up to 8 MB. Stored securely on Cloudinary.' : 'ឯកសារ JPG / PNG / WEBP ទំហំរហូតដល់ ៨ MB។ រក្សាទុកដោយសុវត្ថិភាពលើ Cloudinary។'}
+                  </span>
+                </div>
+
+                {uploadError && (
+                  <div className="text-[11px] text-rose-300 font-medium bg-rose-950/40 border border-rose-400/40 rounded-lg px-3 py-2">
+                    {uploadError}
+                  </div>
+                )}
               </div>
 
               {/* Descriptions */}

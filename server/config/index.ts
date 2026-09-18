@@ -9,3 +9,8 @@ export const ALLOWED_ORIGINS = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
   : [];
 export const PORT = Number(process.env.PORT) || 3000;
+export const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME ?? '';
+export const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY ?? '';
+export const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET ?? '';
+export const CLOUDINARY_UPLOAD_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER ?? 'pranith/products';
+export const CLOUDINARY_MAX_IMAGE_MB = Number(process.env.CLOUDINARY_MAX_IMAGE_MB) || 8;
