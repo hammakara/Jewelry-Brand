@@ -51,3 +51,52 @@ export async function uploadImage(dataUrl: string, options: { publicId?: string 
 
   return result.secure_url;
 }
+
+/**
+ * Extract a Cloudinary public_id from a hosted image URL.
+ * Accepts delivery URLs like:
+ *   /<cloud>/image/upload/v1234/<folder>/<public_id>.png
+ *   /<cloud>/image/upload/f_auto,q_auto/v1234/<folder>/<public_id>.png
+ */
+export function publicIdFromUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('res.cloudinary.com')) return null;
+
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    const uploadIdx = segments.findIndex((s) => s === 'upload');
+    if (uploadIdx === -1 || uploadIdx === segments.length - 1) return null;
+
+    let rest = segments.slice(uploadIdx + 1);
+    const versionIdx = rest.findIndex((s) => /^v\d+$/.test(s));
+    if (versionIdx !== -1) {
+      rest = rest.slice(versionIdx + 1);
+    }
+    rest = rest.filter((s) => !s.includes(','));
+
+    const assetPath = rest.join('/');
+    if (!assetPath) return null;
+
+    return assetPath.replace(/\.[^/.]+$/, '');
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Delete an image from Cloudinary by its hosted URL.
+ * Returns false if the asset no longer exists (already deleted).
+ */
+export async function deleteImageByUrl(url: string): Promise<boolean> {
+  if (!isConfigured) {
+    throw new Error('Cloudinary is not configured. Set CLOUDINARY_* env vars to enable image deletion.');
+  }
+
+  const publicId = publicIdFromUrl(url);
+  if (!publicId) {
+    throw new Error('Invalid Cloudinary image URL.');
+  }
+
+  const result = await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+  return result.result === 'ok' || result.result === 'not found';
+}

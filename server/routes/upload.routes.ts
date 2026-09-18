@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken, requireRole, AuthenticatedRequest } from '../middleware/auth';
-import { uploadImage, isCloudinaryConfigured } from '../lib/cloudinary';
+import { uploadImage, isCloudinaryConfigured, deleteImageByUrl, publicIdFromUrl } from '../lib/cloudinary';
 import { CLOUDINARY_MAX_IMAGE_MB } from '../config';
 
 const router = Router();
@@ -42,6 +42,33 @@ router.post('/upload', authenticateToken, requireRole('ADMIN'), async (req: Auth
   } catch (err: any) {
     console.error('Cloudinary upload error:', err);
     res.status(500).json({ error: err.message || 'Image upload failed.' });
+  }
+});
+
+router.delete('/upload', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res) => {
+  try {
+    if (!isCloudinaryConfigured()) {
+      return res.status(503).json({
+        error: 'Image deletion is disabled. Cloudinary is not configured on the server.',
+        code: 'CLOUDINARY_NOT_CONFIGURED',
+      });
+    }
+
+    const { url } = req.query;
+    if (!url || typeof url !== 'string') {
+      return res.status(400).json({ error: 'Missing "url" query parameter.' });
+    }
+
+    const publicId = publicIdFromUrl(url);
+    if (!publicId) {
+      return res.status(400).json({ error: 'Invalid Cloudinary image URL.' });
+    }
+
+    await deleteImageByUrl(url);
+    res.json({ success: true, message: 'Image deleted from Cloudinary.', publicId });
+  } catch (err: any) {
+    console.error('Cloudinary delete error:', err);
+    res.status(500).json({ error: err.message || 'Image deletion failed.' });
   }
 });
 

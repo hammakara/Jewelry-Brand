@@ -68,6 +68,7 @@ export const AdminProducts: React.FC = () => {
   const [customImageUrl, setCustomImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [removedImageUrls, setRemovedImageUrls] = useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Sample curated pearl photography presets for quick product additions
@@ -95,6 +96,7 @@ export const AdminProducts: React.FC = () => {
 
   const openAddModal = () => {
     setEditingProduct(null);
+    setRemovedImageUrls([]);
     setFormData({
       name: '',
       nameKhmer: '',
@@ -119,6 +121,7 @@ export const AdminProducts: React.FC = () => {
 
   const openEditModal = (product: Product) => {
     setEditingProduct(product);
+    setRemovedImageUrls([]);
     setFormData({
       name: product.name,
       nameKhmer: product.nameKhmer || '',
@@ -151,6 +154,7 @@ export const AdminProducts: React.FC = () => {
       addProduct(formData);
     }
     setIsAddModalOpen(false);
+    void deleteRemovedImages();
   };
 
   const handleAddImageUrl = () => {
@@ -164,10 +168,33 @@ export const AdminProducts: React.FC = () => {
   };
 
   const handleRemoveImage = (index: number) => {
+    const target = formData.images[index];
+    if (target && target.includes('res.cloudinary.com')) {
+      setRemovedImageUrls((prev) => (prev.includes(target) ? prev : [...prev, target]));
+    }
     setFormData((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
     }));
+  };
+
+  const deleteRemovedImages = async () => {
+    const pending = removedImageUrls;
+    setRemovedImageUrls([]);
+    if (pending.length === 0) return;
+
+    const headers: Record<string, string> = {};
+    if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+    await Promise.all(
+      pending.map(async (url) => {
+        try {
+          await fetch(`/api/upload?url=${encodeURIComponent(url)}`, { method: 'DELETE', headers });
+        } catch (err) {
+          console.error('Error deleting image from Cloudinary:', err);
+        }
+      })
+    );
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
