@@ -1,25 +1,17 @@
-import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from './prisma';
 import { ensureDefaultAdmin } from './auth';
-
-if (!process.env.DATABASE_URL) {
-  console.warn('[Prisma] DATABASE_URL not set. Please configure it in your .env file.');
-}
-
-export const prisma = new PrismaClient();
 
 export async function initPrismaDatabase() {
   try {
     console.log('[Prisma + Neon] Connecting to database...');
     const catCount = await prisma.category.count();
     console.log(`[Prisma + Neon] Verified connected. Found ${catCount} categories.`);
-    
+
     if (catCount === 0) {
       console.log('[Prisma + Neon] Database is empty. Seeding initial luxury collection...');
       await seedPrismaData();
     }
 
-    // Ensure default super admin account is securely created
     await ensureDefaultAdmin();
   } catch (error) {
     console.error('[Prisma + Neon] Database initialization error:', error);
@@ -27,7 +19,6 @@ export async function initPrismaDatabase() {
 }
 
 export async function seedPrismaData() {
-  // Categories
   const categories = [
     {
       id: 'cat-necklace',
@@ -93,7 +84,6 @@ export async function seedPrismaData() {
     });
   }
 
-  // Products
   const products = [
     {
       id: 'prod-01',
@@ -345,7 +335,6 @@ export async function seedPrismaData() {
     });
   }
 
-  // Initial Orders
   const initialOrders = [
     {
       id: 'PRL-8492',
@@ -399,7 +388,6 @@ export async function seedPrismaData() {
     });
   }
 
-  // Initial Store Settings
   const initialSettings = {
     brandName: 'ប្រណិត (PRANITH)',
     tagline: 'ប្រណិត — ភាពថ្លៃថ្នូរ និងភាពល្អឥតខ្ចោះនៃគុជខ្យងធម្មជាតិ | Timeless Luxury Pearl Jewelry',

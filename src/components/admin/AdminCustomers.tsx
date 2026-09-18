@@ -3,7 +3,7 @@ import { useStore } from '../../context/StoreContext';
 import { Search, Send, Phone, UserCheck, Star, Sparkles, MapPin } from 'lucide-react';
 
 export const AdminCustomers: React.FC = () => {
-  const { customers, orders } = useStore();
+  const { customers, orders, language } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCustomers = customers.filter((c) => {
@@ -29,17 +29,17 @@ export const AdminCustomers: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-white">
-            VIP Clients & Customers Directory
+            {language === 'en' ? 'VIP Clients & Customers Directory' : 'បញ្ជីអតិថិជន VIP'}
           </h2>
           <p className="text-xs text-white/80">
-            Maintain relationship history, order tallies, and direct contact details.
+            {language === 'en' ? 'Maintain relationship history, order tallies, and direct contact details.' : 'ថែរក្សាប្រវត្តិទំនាក់ទំនង រាប់កុម្ម៉ង់ និងព័ត៌មានទាក់ទងដោយផ្ទាល់។'}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/80 font-medium">Total Clients:</span>
+          <span className="text-xs text-white/80 font-medium">{language === 'en' ? 'Total Clients:' : 'អតិថិជនសរុប:'}</span>
           <span className="px-3 py-1 bg-[#3D2B05] border border-white/30 text-white font-mono font-bold text-xs rounded-lg shadow-sm">
-            {customers.length} Profiles
+            {customers.length} {language === 'en' ? 'Profiles' : 'ប្រវត្តិរូប'}
           </span>
         </div>
       </div>
@@ -51,7 +51,7 @@ export const AdminCustomers: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search clients by name, phone, telegram, or address..."
+            placeholder={language === 'en' ? 'Search clients by name, phone, telegram, or address...' : 'ស្វែងរកអតិថិជនដោយឈ្មោះ, ទូរស័ព្ទ, telegram, ឬអាសយដ្ឋាន...'}
             className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/50 outline-none pl-9"
           />
           <Search className="w-4 h-4 text-white/60 absolute left-3 top-3" />
@@ -77,7 +77,7 @@ export const AdminCustomers: React.FC = () => {
                     <div>
                       <h4 className="font-serif-luxury text-base font-bold text-white">{cust.name}</h4>
                       <span className="text-[10px] text-white/80 uppercase tracking-wider font-bold">
-                        VIP Client
+                        {language === 'en' ? 'VIP Client' : 'អតិថិជន VIP'}
                       </span>
                     </div>
                   </div>
@@ -87,7 +87,7 @@ export const AdminCustomers: React.FC = () => {
                       ${cust.totalSpent.toLocaleString()}
                     </div>
                     <div className="text-[10px] text-white/70">
-                      {cust.orderCount ?? cust.ordersCount ?? 1} Orders
+                      {cust.orderCount ?? cust.ordersCount ?? 1} {language === 'en' ? 'Orders' : 'ការកុម្ម៉ង់'}
                     </div>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export const AdminCustomers: React.FC = () => {
                   className="flex-1 py-2 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors border border-white/20"
                 >
                   <Phone className="w-3.5 h-3.5" />
-                  <span>Call</span>
+                  <span>{language === 'en' ? 'Call' : 'ទូរស័ព្ទ'}</span>
                 </a>
               </div>
 

@@ -4,7 +4,7 @@ import { Plus, Edit2, Trash2, X, Layers, Image as ImageIcon } from 'lucide-react
 import { Category } from '../../types';
 
 export const AdminCategories: React.FC = () => {
-  const { categories, products, addCategory, updateCategory, deleteCategory } = useStore();
+  const { categories, products, addCategory, updateCategory, deleteCategory, language } = useStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -71,10 +71,10 @@ export const AdminCategories: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-white">
-            Product Categories
+            {language === 'en' ? 'Product Categories' : 'ប្រភេទទំនិញ'}
           </h2>
           <p className="text-xs text-white/80">
-            Structure your boutique collections (Necklaces, Earrings, Rings, Bridal Sets, etc.).
+            {language === 'en' ? 'Structure your boutique collections (Necklaces, Earrings, Rings, Bridal Sets, etc.).' : 'រៀបចំបណ្តុំទំនិញរបស់អ្នក (ខ្សែក ក្រវិល ចិញ្ចៀន ឈុតរៀបការ ជាដើម)។'}
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export const AdminCategories: React.FC = () => {
           className="px-4 py-2.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md"
         >
           <Plus className="w-4 h-4" />
-          <span>Add New Category</span>
+          <span>{language === 'en' ? 'Add New Category' : 'បន្ថែមប្រភេទថ្មី'}</span>
         </button>
       </div>
 
@@ -100,16 +100,16 @@ export const AdminCategories: React.FC = () => {
               <div className="relative h-44 bg-[#352504] overflow-hidden">
                 <img
                   src={cat.image}
-                  alt={cat.name}
+                  alt={language === 'km' && cat.nameKhmer ? cat.nameKhmer : cat.name}
                   className="w-full h-full object-cover opacity-85"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#523B08] via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-4 right-4 text-white">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-white/90">
-                    {itemCount} Products Listed
+                    {language === 'en' ? `${itemCount} Products Listed` : `បានចុះបញ្ជីផលិតផល ${itemCount}`}
                   </span>
                   <h3 className="font-serif-luxury text-xl font-bold text-white">
-                    {cat.name}
+                    {language === 'km' && cat.nameKhmer ? cat.nameKhmer : cat.name}
                   </h3>
                   {cat.nameKhmer && (
                     <div className="text-xs text-white/80 font-medium">{cat.nameKhmer}</div>
@@ -119,7 +119,7 @@ export const AdminCategories: React.FC = () => {
 
               <div className="p-4 flex-1 flex flex-col justify-between">
                 <p className="text-xs text-white/80 line-clamp-2">
-                  {cat.description}
+                  {language === 'km' && cat.descriptionKhmer ? cat.descriptionKhmer : cat.description}
                 </p>
 
                 <div className="mt-4 pt-3 border-t border-white/15 flex items-center justify-between">
@@ -129,22 +129,26 @@ export const AdminCategories: React.FC = () => {
                     <button
                       onClick={() => openEdit(cat)}
                       className="p-1.5 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white rounded transition-colors"
-                      title="Edit Category"
+                      title={language === 'en' ? 'Edit Category' : 'កែប្រែប្រភេទ'}
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => {
                         if (itemCount > 0) {
-                          alert(`Cannot delete category with ${itemCount} products. Please reassign products first.`);
+                          alert(language === 'en'
+                            ? `Cannot delete category with ${itemCount} products. Please reassign products first.`
+                            : `មិនអាចលុបប្រភេទដែលមានផលិតផល ${itemCount} បានទេ។ សូមផ្ទេរផលិតផលជាមុនសិន។`);
                           return;
                         }
-                        if (window.confirm(`Delete category "${cat.name}"?`)) {
+                        if (window.confirm(language === 'en'
+                          ? `Delete category "${cat.name}"?`
+                          : `លុបប្រភេទ "${language === 'km' && cat.nameKhmer ? cat.nameKhmer : cat.name}"?`)) {
                           deleteCategory(cat.id);
                         }
                       }}
                       className="p-1.5 bg-[#3D2B05] hover:bg-rose-600 text-white rounded transition-colors"
-                      title="Delete Category"
+                      title={language === 'en' ? 'Delete Category' : 'លុបប្រភេទ'}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -163,7 +167,9 @@ export const AdminCategories: React.FC = () => {
           <div className="relative w-full max-w-lg bg-[#523B08] text-white border border-white/20 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-white/15 pb-3">
               <h3 className="font-display-luxury text-base font-bold text-white">
-                {editingCategory ? 'EDIT CATEGORY' : 'ADD NEW CATEGORY'}
+                {editingCategory
+                  ? (language === 'en' ? 'EDIT CATEGORY' : 'កែប្រែប្រភេទទំនិញ')
+                  : (language === 'en' ? 'ADD NEW CATEGORY' : 'បន្ថែមប្រភេទថ្មី')}
               </h3>
               <button onClick={() => setIsModalOpen(false)} className="text-white/80 hover:text-white">
                 <X className="w-5 h-5" />
@@ -173,21 +179,21 @@ export const AdminCategories: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-white mb-1">
-                  Category Name (English) *
+                  {language === 'en' ? 'Category Name (English) *' : 'ឈ្មោះប្រភេទ (អង់គ្លេស) *'}
                 </label>
                 <input
                   type="text"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g. Pearl Pendants"
+                  placeholder={language === 'en' ? 'e.g. Pearl Pendants' : 'ឧ. បន្តោងគុជខ្យង'}
                   className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-white mb-1">
-                  Category Name (Khmer)
+                  {language === 'en' ? 'Category Name (Khmer)' : 'ឈ្មោះប្រភេទ (ខ្មែរ)'}
                 </label>
                 <input
                   type="text"
@@ -200,7 +206,7 @@ export const AdminCategories: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-white mb-1">
-                  Slug (URL path)
+                  {language === 'en' ? 'Slug (URL path)' : 'Slug (ផ្លូវ URL)'}
                 </label>
                 <input
                   type="text"
@@ -213,7 +219,7 @@ export const AdminCategories: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-white mb-1">
-                  Cover Photo Image URL
+                  {language === 'en' ? 'Cover Photo Image URL' : 'URL រូបភាពបិទបាំង'}
                 </label>
                 <input
                   type="url"
@@ -226,7 +232,7 @@ export const AdminCategories: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-bold text-white mb-1">
-                  Description
+                  {language === 'en' ? 'Description' : 'ការពិពណ៌នា'}
                 </label>
                 <textarea
                   rows={2}
@@ -242,13 +248,15 @@ export const AdminCategories: React.FC = () => {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 border border-white/30 text-white text-xs font-bold rounded-lg hover:bg-[#3D2B05]"
                 >
-                  Cancel
+                  {language === 'en' ? 'Cancel' : 'បោះបង់'}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase rounded-lg shadow-md transition-colors"
                 >
-                  {editingCategory ? 'Update' : 'Create'}
+                  {editingCategory
+                    ? (language === 'en' ? 'Update' : 'ធ្វើបច្ចុប្បន្នភាព')
+                    : (language === 'en' ? 'Create' : 'បង្កើត')}
                 </button>
               </div>
             </form>

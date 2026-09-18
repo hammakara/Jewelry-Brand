@@ -2,16 +2,13 @@ import 'dotenv/config';
 import express, { Request, Response } from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
-import { app } from './server/app';
-import { initPrismaDatabase } from './server/lib/seed';
-
-const PORT = Number(process.env.PORT) || 3000;
+import { app } from './app';
+import { initPrismaDatabase } from './lib/seed';
+import { PORT } from './config';
 
 async function startServer() {
-  // Initialize Prisma & Neon Database connection
   await initPrismaDatabase();
 
-  // Vite middleware for local development / static files for production
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },

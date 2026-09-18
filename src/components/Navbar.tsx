@@ -111,7 +111,7 @@ export const Navbar: React.FC = () => {
                   <div className="px-3 py-2 border-b border-stone-800">
                     <div className="font-bold text-white truncate">{currentUser.name}</div>
                     <div className="text-[10px] text-stone-400 truncate">{currentUser.email}</div>
-                    <div className="text-[9px] text-amber-400 font-semibold uppercase mt-0.5">Role: {currentUser.role}</div>
+                    <div className="text-[9px] text-amber-400 font-semibold uppercase mt-0.5">{language === 'en' ? 'Role:' : 'តួនាទី៖'} {currentUser.role}</div>
                   </div>
 
                   {currentUser.role === 'ADMIN' && (
@@ -121,7 +121,7 @@ export const Navbar: React.FC = () => {
                     >
                       <span className="flex items-center gap-2">
                         <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                        Admin Suite
+                        {language === 'en' ? 'Admin Suite' : 'ផ្នែកអ្នកគ្រប់គ្រង'}
                       </span>
                       {pendingOrdersCount > 0 && (
                         <span className="bg-rose-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-bold">
@@ -136,7 +136,7 @@ export const Navbar: React.FC = () => {
                     className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-2 text-stone-300"
                   >
                     <Clock className="w-3.5 h-3.5" />
-                    Track Orders
+                    {language === 'en' ? 'Track Orders' : 'តាមដានការកុម្ម៉ង់'}
                   </button>
 
                   <button
@@ -147,7 +147,7 @@ export const Navbar: React.FC = () => {
                     className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-2 text-stone-300"
                   >
                     <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-                    Change Password
+                    {language === 'en' ? 'Change Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់'}
                   </button>
 
                   <button
@@ -158,7 +158,7 @@ export const Navbar: React.FC = () => {
                     className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-2 text-rose-300 border-t border-stone-800 mt-1"
                   >
                     <LogOut className="w-3.5 h-3.5" />
-                    Sign Out
+                    {language === 'en' ? 'Sign Out' : 'ចាកចេញ'}
                   </button>
                 </div>
               )}
@@ -169,7 +169,7 @@ export const Navbar: React.FC = () => {
               className="flex items-center gap-1 text-[11px] px-2.5 py-0.5 rounded border border-white/40 text-white hover:bg-white/15 transition-all"
             >
               <User className="w-3 h-3" />
-              <span>Sign In</span>
+              <span>{language === 'en' ? 'Sign In' : 'ចូលគណនី'}</span>
             </button>
           )}
         </div>
@@ -196,7 +196,7 @@ export const Navbar: React.FC = () => {
               </span>
             </div>
             <span className="text-[9px] uppercase tracking-[0.35em] text-white/90 font-semibold pl-8">
-              Luxury Pearl Boutique
+              {language === 'en' ? 'Luxury Pearl Boutique' : 'ហាងលក់គុជខ្យងប្រណីត'}
             </span>
           </div>
 
@@ -304,14 +304,14 @@ export const Navbar: React.FC = () => {
             <button
               onClick={() => navigate('shop')}
               className="p-2 text-white hover:text-white/80"
-              aria-label="Shop"
+              aria-label={language === 'en' ? 'Shop' : 'ទំនិញ'}
             >
               <ShoppingBag className="w-5 h-5" />
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 text-white hover:text-white/80 focus:outline-none"
-              aria-label="Toggle menu"
+              aria-label={language === 'en' ? 'Toggle menu' : 'បើក/បិទម៉ឺនុយ'}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -384,7 +384,7 @@ export const Navbar: React.FC = () => {
                 }}
                 className="w-full py-2.5 bg-white/15 border border-white/30 text-white font-bold text-center text-xs uppercase tracking-widest rounded"
               >
-                Sign In / Register VIP
+                {language === 'en' ? 'Sign In / Register VIP' : 'ចូលគណនី / ចុះឈ្មោះ VIP'}
               </button>
             ) : (
               <button
@@ -394,7 +394,7 @@ export const Navbar: React.FC = () => {
                 }}
                 className="w-full py-2 bg-rose-500/20 text-rose-200 border border-rose-400/40 text-xs font-semibold rounded"
               >
-                Sign Out ({currentUser.name})
+                {language === 'en' ? 'Sign Out' : 'ចាកចេញ'} ({currentUser.name})
               </button>
             )}
 
@@ -412,7 +412,7 @@ export const Navbar: React.FC = () => {
               </a>
               <a href={settings.telegramGroupLink} target="_blank" rel="noreferrer" className="flex items-center gap-1.5 text-white font-semibold">
                 <Send className="w-3.5 h-3.5 text-white" />
-                Telegram
+                {language === 'en' ? 'Telegram' : 'តេលេក្រាម'}
               </a>
             </div>
           </div>

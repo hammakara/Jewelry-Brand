@@ -10,6 +10,7 @@ export const AuthModal: React.FC = () => {
     setAuthModalTab,
     login,
     register,
+    language,
   } = useStore();
 
   const [email, setEmail] = useState('');
@@ -31,12 +32,12 @@ export const AuthModal: React.FC = () => {
       const result = await login(email, password);
       setLoading(false);
       if (!result.success) {
-        setErrorMessage(result.error || 'Invalid credentials. Please check your email and password.');
+        setErrorMessage(result.error || (language === 'en' ? 'Invalid credentials. Please check your email and password.' : 'ព័ត៌មានសម្គាល់មិនត្រឹមត្រូវ។ សូមពិនិត្យអ៊ីមែល និងលេខសម្ងាត់របស់អ្នក។'));
       }
     } else {
       if (password.length < 6) {
         setLoading(false);
-        setErrorMessage('Password must be at least 6 characters long.');
+        setErrorMessage(language === 'en' ? 'Password must be at least 6 characters long.' : 'លេខសម្ងាត់ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ។');
         return;
       }
       const result = await register({
@@ -47,7 +48,7 @@ export const AuthModal: React.FC = () => {
       });
       setLoading(false);
       if (!result.success) {
-        setErrorMessage(result.error || 'Registration failed. Please try again.');
+        setErrorMessage(result.error || (language === 'en' ? 'Registration failed. Please try again.' : 'ការចុះឈ្មោះបានបរាជ័យ។ សូមព្យាយាមម្តងទៀត។'));
       }
     }
   };
@@ -60,7 +61,7 @@ export const AuthModal: React.FC = () => {
         <button
           onClick={closeAuthModal}
           className="absolute top-4 right-4 text-stone-400 hover:text-white p-1 rounded-full hover:bg-stone-800 transition-colors"
-          aria-label="Close modal"
+          aria-label={language === 'en' ? 'Close modal' : 'បិទប្រអប់'}
         >
           <X className="w-5 h-5" />
         </button>
@@ -71,12 +72,14 @@ export const AuthModal: React.FC = () => {
             <ShieldCheck className="w-6 h-6" />
           </div>
           <h2 className="font-display-luxury text-xl sm:text-2xl font-bold tracking-wide text-white">
-            {authModalTab === 'login' ? 'Boutique Client & Admin Sign In' : 'Create VIP Customer Account'}
+            {authModalTab === 'login'
+              ? (language === 'en' ? 'Boutique Client & Admin Sign In' : 'ចូលគណនីអតិថិជន និងអ្នកគ្រប់គ្រង')
+              : (language === 'en' ? 'Create VIP Customer Account' : 'បង្កើតគណនីអតិថិជន VIP')}
           </h2>
           <p className="text-xs text-stone-400">
             {authModalTab === 'login'
-              ? 'Sign in to access your luxury customer orders or administrative suite.'
-              : 'Register your customer account for order history and personalized concierge services.'}
+              ? (language === 'en' ? 'Sign in to access your luxury customer orders or administrative suite.' : 'ចូលដើម្បីចូលដល់ការកុម្ម៉ង់អតិថិជន ឬផ្នែកគ្រប់គ្រងរបស់អ្នក។')
+              : (language === 'en' ? 'Register your customer account for order history and personalized concierge services.' : 'ចុះឈ្មោះគណនីអតិថិជនរបស់អ្នកដើម្បីមើលប្រវត្តិការកុម្ម៉ង់ និងសេវាកម្មផ្ទាល់ខ្លួន។')}
           </p>
         </div>
 
@@ -94,7 +97,7 @@ export const AuthModal: React.FC = () => {
                 : 'border-transparent text-stone-500 hover:text-stone-300'
             }`}
           >
-            Sign In
+            {language === 'en' ? 'Sign In' : 'ចូលគណនី'}
           </button>
           <button
             type="button"
@@ -108,14 +111,14 @@ export const AuthModal: React.FC = () => {
                 : 'border-transparent text-stone-500 hover:text-stone-300'
             }`}
           >
-            Register
+            {language === 'en' ? 'Register' : 'ចុះឈ្មោះ'}
           </button>
         </div>
 
         {/* Error Alert */}
         {errorMessage && (
           <div className="mb-4 p-3 rounded-lg bg-red-950/60 border border-red-500/40 text-red-200 text-xs flex items-start gap-2">
-            <span className="font-bold">Error:</span>
+            <span className="font-bold">{language === 'en' ? 'Error:' : 'កំហុស៖'}</span>
             <span>{errorMessage}</span>
           </div>
         )}
@@ -126,7 +129,7 @@ export const AuthModal: React.FC = () => {
             <>
               <div>
                 <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Full Name
+                  {language === 'en' ? 'Full Name' : 'ឈ្មោះពេញ'}
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -143,7 +146,7 @@ export const AuthModal: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-semibold text-stone-300 mb-1">
-                  Telegram / Phone (Optional)
+                  {language === 'en' ? 'Telegram / Phone (Optional)' : 'តេលេក្រាម / ទូរស័ព្ទ (ជម្រើស)'}
                 </label>
                 <div className="relative">
                   <Phone className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -161,7 +164,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-stone-300 mb-1">
-              Email Address
+              {language === 'en' ? 'Email Address' : 'អាសយដ្ឋានអ៊ីមែល'}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -178,7 +181,7 @@ export const AuthModal: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-stone-300 mb-1">
-              Password
+              {language === 'en' ? 'Password' : 'លេខសម្ងាត់'}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -199,7 +202,7 @@ export const AuthModal: React.FC = () => {
               </button>
             </div>
             {authModalTab === 'register' && (
-              <p className="text-[11px] text-stone-500 mt-1">Must be at least 6 characters.</p>
+              <p className="text-[11px] text-stone-500 mt-1">{language === 'en' ? 'Must be at least 6 characters.' : 'ត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ។'}</p>
             )}
           </div>
 
@@ -212,7 +215,7 @@ export const AuthModal: React.FC = () => {
               <div className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
             ) : (
               <>
-                <span>{authModalTab === 'login' ? 'Sign In' : 'Create Account'}</span>
+                <span>{authModalTab === 'login' ? (language === 'en' ? 'Sign In' : 'ចូលគណនី') : (language === 'en' ? 'Create Account' : 'បង្កើតគណនី')}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

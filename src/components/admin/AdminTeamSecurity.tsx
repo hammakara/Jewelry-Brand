@@ -4,7 +4,7 @@ import { ShieldCheck, UserPlus, Trash2, KeyRound, CheckCircle2, Lock, User, Aler
 import { AuthUser } from '../../types';
 
 export const AdminTeamSecurity: React.FC = () => {
-  const { authToken, currentUser, showToast } = useStore();
+  const { authToken, currentUser, showToast, language } = useStore();
   const [users, setUsers] = useState<AuthUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -51,7 +51,7 @@ export const AdminTeamSecurity: React.FC = () => {
     setFormError(null);
 
     if (password.length < 6) {
-      setFormError('Password must be at least 6 characters.');
+      setFormError(language === 'en' ? 'Password must be at least 6 characters.' : 'លេខសម្ងាត់ត្រូវមានយ៉ាងតិច 6 តួអក្សរ។');
       return;
     }
 
@@ -73,11 +73,11 @@ export const AdminTeamSecurity: React.FC = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setFormError(data.error || 'Failed to create team member.');
+        setFormError(data.error || (language === 'en' ? 'Failed to create team member.' : 'មិនអាចបង្កើតសមាជិកក្រុមបានទេ។'));
         return;
       }
 
-      showToast(`Team member "${data.name}" added successfully!`, 'success');
+      showToast(language === 'en' ? `Team member "${data.name}" added successfully!` : `សមាជិកក្រុម "${data.name}" ត្រូវបានបន្ថែមដោយជោគជ័យ!`, 'success');
       setName('');
       setEmail('');
       setPassword('');
@@ -85,12 +85,12 @@ export const AdminTeamSecurity: React.FC = () => {
       setIsAddingUser(false);
       fetchUsers();
     } catch (err: any) {
-      setFormError(err.message || 'Error creating user');
+      setFormError(err.message || (language === 'en' ? 'Error creating user' : 'មានបញ្ហាក្នុងការបង្កើតអ្នកប្រើប្រាស់'));
     }
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
-    if (!confirm(`Are you sure you want to revoke access for ${userName}?`)) return;
+    if (!confirm(language === 'en' ? `Are you sure you want to revoke access for ${userName}?` : `តើអ្នកប្រាកដថាចង់ដកសិទ្ធិចូលប្រើសម្រាប់ ${userName} ដែរឬទេ?`)) return;
 
     try {
       const res = await fetch(`/api/auth/users/${userId}`, {
@@ -100,11 +100,11 @@ export const AdminTeamSecurity: React.FC = () => {
 
       if (!res.ok) {
         const data = await res.json();
-        showToast(data.error || 'Cannot delete user', 'info');
+        showToast(data.error || (language === 'en' ? 'Cannot delete user' : 'មិនអាចលុបអ្នកប្រើប្រាស់បានទេ'), 'info');
         return;
       }
 
-      showToast(`Access revoked for ${userName}.`, 'info');
+      showToast(language === 'en' ? `Access revoked for ${userName}.` : `សិទ្ធិចូលប្រើរបស់ ${userName} ត្រូវបានដកហូត។`, 'info');
       setUsers((prev) => prev.filter((u) => u.id !== userId));
     } catch (err: any) {
       showToast(err.message, 'info');
@@ -128,11 +128,11 @@ export const AdminTeamSecurity: React.FC = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setPassError(data.error || 'Failed to change password.');
+        setPassError(data.error || (language === 'en' ? 'Failed to change password.' : 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។'));
         return;
       }
 
-      setPassSuccess('Your password has been securely updated.');
+      setPassSuccess(language === 'en' ? 'Your password has been securely updated.' : 'លេខសម្ងាត់របស់អ្នកត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយសុវត្ថិភាព។');
       setCurrentPassword('');
       setNewPassword('');
       setTimeout(() => {
@@ -140,7 +140,7 @@ export const AdminTeamSecurity: React.FC = () => {
         setPassSuccess(null);
       }, 2000);
     } catch (err: any) {
-      setPassError(err.message || 'Error changing password.');
+      setPassError(err.message || (language === 'en' ? 'Error changing password.' : 'មានបញ្ហាក្នុងការផ្លាស់ប្តូរលេខសម្ងាត់។'));
     }
   };
 
@@ -152,11 +152,11 @@ export const AdminTeamSecurity: React.FC = () => {
           <div className="flex items-center gap-2 mb-1">
             <ShieldCheck className="w-5 h-5 text-amber-300" />
             <h2 className="font-display-luxury text-xl font-bold text-white tracking-wide">
-              User Accounts & Role-Based Security
+              {language === 'en' ? 'User Accounts & Role-Based Security' : 'គណនីអ្នកប្រើប្រាស់ និងសុវត្ថិភាពតាមតួនាទី'}
             </h2>
           </div>
           <p className="text-xs text-white/80 max-w-xl">
-            Manage authenticated users with the two system roles: Administrator (full management suite access) and Customer (VIP storefront & order tracker).
+            {language === 'en' ? 'Manage authenticated users with the two system roles: Administrator (full management suite access) and Customer (VIP storefront & order tracker).' : 'គ្រប់គ្រងអ្នកប្រើប្រាស់ដែលបានផ្ទៀងផ្ទាត់ ជាមួយតួនាទីទាំងពីររបស់ប្រព័ន្ធ៖ អ្នកគ្រប់គ្រង (សិទ្ធិចូលប្រើឧបករណ៍គ្រប់គ្រងពេញលេញ) និងអតិថិជន (ហាងលក់ VIP និងការតាមដានកុម្ម៉ង់)។'}
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export const AdminTeamSecurity: React.FC = () => {
             className="px-4 py-2.5 bg-[#3D2B05] hover:bg-white text-white hover:text-[#523D0C] border border-white/30 text-xs font-semibold rounded-xl transition-all flex items-center gap-2"
           >
             <KeyRound className="w-3.5 h-3.5" />
-            <span>Change My Password</span>
+            <span>{language === 'en' ? 'Change My Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់របស់ខ្ញុំ'}</span>
           </button>
 
           {currentUser?.role === 'ADMIN' && (
@@ -175,7 +175,7 @@ export const AdminTeamSecurity: React.FC = () => {
               className="px-4 py-2.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-wider rounded-xl shadow-lg transition-all flex items-center gap-2"
             >
               <UserPlus className="w-4 h-4 text-[#523D0C]" />
-              <span>Add User Account</span>
+              <span>{language === 'en' ? 'Add User Account' : 'បន្ថែមគណនីអ្នកប្រើប្រាស់'}</span>
             </button>
           )}
         </div>
@@ -186,7 +186,7 @@ export const AdminTeamSecurity: React.FC = () => {
         <div className="bg-[#523B08] border border-amber-400/40 rounded-2xl p-6 shadow-xl animate-in fade-in slide-in-from-top-3 duration-200">
           <h3 className="text-sm font-bold uppercase tracking-wider text-amber-200 mb-4 flex items-center gap-2">
             <Lock className="w-4 h-4" />
-            Update Account Password ({currentUser?.email})
+            {language === 'en' ? `Update Account Password (${currentUser?.email})` : `ធ្វើបច្ចុប្បន្នភាពលេខសម្ងាត់គណនី (${currentUser?.email})`}
           </h3>
 
           {passError && (
@@ -206,7 +206,7 @@ export const AdminTeamSecurity: React.FC = () => {
           <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs text-white/80 font-semibold mb-1">
-                Current Password
+                {language === 'en' ? 'Current Password' : 'លេខសម្ងាត់បច្ចុប្បន្ន'}
               </label>
               <input
                 type="password"
@@ -220,7 +220,7 @@ export const AdminTeamSecurity: React.FC = () => {
 
             <div>
               <label className="block text-xs text-white/80 font-semibold mb-1">
-                New Password (minimum 6 characters)
+                {language === 'en' ? 'New Password (minimum 6 characters)' : 'លេខសម្ងាត់ថ្មី (យ៉ាងតិច 6 តួអក្សរ)'}
               </label>
               <input
                 type="password"
@@ -238,13 +238,13 @@ export const AdminTeamSecurity: React.FC = () => {
                 onClick={() => setIsChangingPass(false)}
                 className="px-4 py-2 text-xs font-semibold text-white/70 hover:text-white"
               >
-                Cancel
+                {language === 'en' ? 'Cancel' : 'បោះបង់'}
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-white text-[#523D0C] font-bold text-xs uppercase tracking-wider rounded-lg shadow"
               >
-                Update Password
+                {language === 'en' ? 'Update Password' : 'ធ្វើបច្ចុប្បន្នភាពលេខសម្ងាត់'}
               </button>
             </div>
           </form>
@@ -256,7 +256,7 @@ export const AdminTeamSecurity: React.FC = () => {
         <div className="bg-[#523B08] border border-amber-400/40 rounded-2xl p-6 shadow-xl animate-in fade-in slide-in-from-top-3 duration-200">
           <h3 className="text-sm font-bold uppercase tracking-wider text-amber-200 mb-4 flex items-center gap-2">
             <UserPlus className="w-4 h-4" />
-            Provision New Staff Credentials
+            {language === 'en' ? 'Provision New Staff Credentials' : 'បង្កើតលិខិតសម្គាល់បុគ្គលិកថ្មី'}
           </h3>
 
           {formError && (
@@ -268,19 +268,19 @@ export const AdminTeamSecurity: React.FC = () => {
 
           <form onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-white/80 font-semibold mb-1">Full Name</label>
+              <label className="block text-xs text-white/80 font-semibold mb-1">{language === 'en' ? 'Full Name' : 'ឈ្មោះពេញ'}</label>
               <input
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Sreysros Keo"
+                placeholder={language === 'en' ? 'e.g. Sreysros Keo' : 'ឧ. Sreysros Keo'}
                 className="w-full bg-[#3D2B05] border border-white/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-white"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-white/80 font-semibold mb-1">Email Address</label>
+              <label className="block text-xs text-white/80 font-semibold mb-1">{language === 'en' ? 'Email Address' : 'អ៊ីមែល'}</label>
               <input
                 type="email"
                 required
@@ -292,7 +292,7 @@ export const AdminTeamSecurity: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs text-white/80 font-semibold mb-1">Initial Password</label>
+              <label className="block text-xs text-white/80 font-semibold mb-1">{language === 'en' ? 'Initial Password' : 'លេខសម្ងាត់ដំបូង'}</label>
               <input
                 type="password"
                 required
@@ -304,19 +304,19 @@ export const AdminTeamSecurity: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs text-white/80 font-semibold mb-1">Role Assignment</label>
+              <label className="block text-xs text-white/80 font-semibold mb-1">{language === 'en' ? 'Role Assignment' : 'ការកំណត់តួនាទី'}</label>
               <select
                 value={role}
                 onChange={(e) => setRole(e.target.value as any)}
                 className="w-full bg-[#3D2B05] border border-white/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-white"
               >
-                <option value="ADMIN">ADMIN (Full Store & Order Management Access)</option>
-                <option value="CUSTOMER">CUSTOMER (Normal Client User)</option>
+                <option value="ADMIN">{language === 'en' ? 'ADMIN (Full Store & Order Management Access)' : 'ADMIN (សិទ្ធិគ្រប់គ្រងហាង និងកុម្ម៉ង់ពេញលេញ)'}</option>
+                <option value="CUSTOMER">{language === 'en' ? 'CUSTOMER (Normal Client User)' : 'CUSTOMER (អតិថិជនធម្មតា)'}</option>
               </select>
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs text-white/80 font-semibold mb-1">Phone / Telegram (Optional)</label>
+              <label className="block text-xs text-white/80 font-semibold mb-1">{language === 'en' ? 'Phone / Telegram (Optional)' : 'ទូរសព្ទ / Telegram (ស្រេចចិត្ត)'}</label>
               <input
                 type="text"
                 value={phone}
@@ -332,13 +332,13 @@ export const AdminTeamSecurity: React.FC = () => {
                 onClick={() => setIsAddingUser(false)}
                 className="px-4 py-2 text-xs font-semibold text-white/70 hover:text-white"
               >
-                Cancel
+                {language === 'en' ? 'Cancel' : 'បោះបង់'}
               </button>
               <button
                 type="submit"
                 className="px-5 py-2 bg-white text-[#523D0C] font-bold text-xs uppercase tracking-wider rounded-lg shadow"
               >
-                Provision Account
+                {language === 'en' ? 'Provision Account' : 'បង្កើតគណនី'}
               </button>
             </div>
           </form>
@@ -349,14 +349,14 @@ export const AdminTeamSecurity: React.FC = () => {
       <div className="bg-[#523B08] border border-white/20 rounded-2xl overflow-hidden shadow-xl">
         <div className="p-5 border-b border-white/20 flex items-center justify-between">
           <h3 className="font-display-luxury text-base font-bold text-white">
-            Authorized Personnel & Team ({users.length})
+            {language === 'en' ? `Authorized Personnel & Team (${users.length})` : `បុគ្គលិក និងក្រុមដែលមានសិទ្ធិ (${users.length})`}
           </h3>
           <button
             onClick={fetchUsers}
             disabled={loading}
             className="text-xs text-amber-300 hover:text-white underline font-semibold"
           >
-            {loading ? 'Refreshing...' : 'Refresh List'}
+            {loading ? (language === 'en' ? 'Refreshing...' : 'កំពុងធ្វើបច្ចុប្បន្នភាព...') : (language === 'en' ? 'Refresh List' : 'ធ្វើបច្ចុប្បន្នភាពបញ្ជី')}
           </button>
         </div>
 
@@ -364,11 +364,11 @@ export const AdminTeamSecurity: React.FC = () => {
           <table className="w-full text-left text-xs">
             <thead className="bg-[#3D2B05] text-white/70 uppercase tracking-wider border-b border-white/10">
               <tr>
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4">Phone</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{language === 'en' ? 'User' : 'អ្នកប្រើប្រាស់'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Email' : 'អ៊ីមែល'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Role' : 'តួនាទី'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Phone' : 'ទូរសព្ទ'}</th>
+                <th className="py-3 px-4 text-right">{language === 'en' ? 'Actions' : 'សកម្មភាព'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -388,7 +388,7 @@ export const AdminTeamSecurity: React.FC = () => {
                             <span>{u.name}</span>
                             {isCurrent && (
                               <span className="text-[10px] bg-amber-400 text-stone-950 font-bold px-1.5 py-0.2 rounded-full">
-                                YOU
+                                {language === 'en' ? 'YOU' : 'អ្នក'}
                               </span>
                             )}
                           </div>
@@ -403,7 +403,7 @@ export const AdminTeamSecurity: React.FC = () => {
                           ? 'bg-amber-400 text-stone-950 shadow-sm'
                           : 'bg-emerald-400/20 text-emerald-200 border border-emerald-400/40'
                       }`}>
-                        {u.role === 'ADMIN' ? 'ADMIN' : 'CUSTOMER'}
+                        {u.role === 'ADMIN' ? (language === 'en' ? 'Administrator' : 'អ្នកគ្រប់គ្រង') : (language === 'en' ? 'Customer' : 'អតិថិជន')}
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-white/70">{u.phone || '—'}</td>
@@ -412,12 +412,12 @@ export const AdminTeamSecurity: React.FC = () => {
                         <button
                           onClick={() => handleDeleteUser(u.id, u.name)}
                           className="p-1.5 text-rose-300 hover:text-white hover:bg-rose-900/60 rounded-lg transition"
-                          title="Revoke access"
+                          title={language === 'en' ? 'Revoke access' : 'ដកសិទ្ធិចូលប្រើ'}
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       ) : (
-                        <span className="text-[10px] text-white/40 italic">Protected</span>
+                        <span className="text-[10px] text-white/40 italic">{language === 'en' ? 'Protected' : 'ត្រូវបានការពារ'}</span>
                       )}
                     </td>
                   </tr>

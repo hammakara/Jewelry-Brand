@@ -18,7 +18,8 @@ export const ChangePasswordModal: React.FC = () => {
     closeChangePasswordModal, 
     currentUser, 
     changePassword, 
-    showToast 
+    showToast,
+    language,
   } = useStore();
 
   const [currentPassword, setCurrentPassword] = useState('');
@@ -39,22 +40,22 @@ export const ChangePasswordModal: React.FC = () => {
     setErrorMessage(null);
 
     if (!currentPassword) {
-      setErrorMessage('Please enter your current password.');
+      setErrorMessage(language === 'en' ? 'Please enter your current password.' : 'សូមបញ្ចូលលេខសម្ងាត់បច្ចុប្បន្នរបស់អ្នក។');
       return;
     }
 
     if (newPassword.length < 6) {
-      setErrorMessage('New password must be at least 6 characters long.');
+      setErrorMessage(language === 'en' ? 'New password must be at least 6 characters long.' : 'លេខសម្ងាត់ថ្មីត្រូវមានយ៉ាងហោចណាស់ ៦ តួអក្សរ។');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setErrorMessage('New passwords do not match.');
+      setErrorMessage(language === 'en' ? 'New passwords do not match.' : 'លេខសម្ងាត់ថ្មីមិនត្រូវគ្នាទេ។');
       return;
     }
 
     if (currentPassword === newPassword) {
-      setErrorMessage('New password cannot be the same as your current password.');
+      setErrorMessage(language === 'en' ? 'New password cannot be the same as your current password.' : 'លេខសម្ងាត់ថ្មីមិនអាចដូចលេខសម្ងាត់បច្ចុប្បន្នរបស់អ្នកបានទេ។');
       return;
     }
 
@@ -68,7 +69,7 @@ export const ChangePasswordModal: React.FC = () => {
       setConfirmPassword('');
       closeChangePasswordModal();
     } else {
-      setErrorMessage(res.error || 'Failed to update password. Please check your current password.');
+      setErrorMessage(res.error || (language === 'en' ? 'Failed to update password. Please check your current password.' : 'ការផ្លាស់ប្តូរលេខសម្ងាត់បរាជ័យ។ សូមពិនិត្យលេខសម្ងាត់បច្ចុប្បន្នរបស់អ្នក។'));
     }
   };
 
@@ -82,7 +83,7 @@ export const ChangePasswordModal: React.FC = () => {
         <button
           onClick={closeChangePasswordModal}
           className="absolute top-4 right-4 text-stone-400 hover:text-white p-1.5 rounded-full hover:bg-stone-800 transition-colors"
-          aria-label="Close modal"
+          aria-label={language === 'en' ? 'Close modal' : 'បិទប្រអប់'}
         >
           <X className="w-5 h-5" />
         </button>
@@ -93,10 +94,10 @@ export const ChangePasswordModal: React.FC = () => {
             <KeyRound className="w-6 h-6" />
           </div>
           <h2 className="font-display-luxury text-xl sm:text-2xl font-bold tracking-wide text-white">
-            Change Your Password
+            {language === 'en' ? 'Change Your Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់របស់អ្នក'}
           </h2>
           <p className="text-xs text-stone-400">
-            Update the security credentials for your boutique account.
+            {language === 'en' ? 'Update the security credentials for your boutique account.' : 'ធ្វើបច្ចុប្បន្នភាពព័ត៌មានសុវត្ថិភាពសម្រាប់គណនីប៊ូទិករបស់អ្នក។'}
           </p>
 
           {/* User badge */}
@@ -128,7 +129,7 @@ export const ChangePasswordModal: React.FC = () => {
           {/* Current Password */}
           <div>
             <label className="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">
-              Current Password
+              {language === 'en' ? 'Current Password' : 'លេខសម្ងាត់បច្ចុប្បន្ន'}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
@@ -155,7 +156,7 @@ export const ChangePasswordModal: React.FC = () => {
           {/* New Password */}
           <div>
             <label className="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">
-              New Password
+              {language === 'en' ? 'New Password' : 'លេខសម្ងាត់ថ្មី'}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
@@ -183,7 +184,7 @@ export const ChangePasswordModal: React.FC = () => {
           {/* Confirm New Password */}
           <div>
             <label className="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">
-              Confirm New Password
+              {language === 'en' ? 'Confirm New Password' : 'បញ្ជាក់លេខសម្ងាត់ថ្មី'}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400">
@@ -209,11 +210,11 @@ export const ChangePasswordModal: React.FC = () => {
               <div className="mt-1.5 text-[11px] flex items-center gap-1.5">
                 {newPassword === confirmPassword ? (
                   <span className="text-emerald-400 flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> Passwords match
+                    <CheckCircle2 className="w-3.5 h-3.5" /> {language === 'en' ? 'Passwords match' : 'លេខសម្ងាត់ត្រូវគ្នា'}
                   </span>
                 ) : (
                   <span className="text-rose-400 flex items-center gap-1">
-                    <AlertCircle className="w-3.5 h-3.5" /> Passwords do not match
+                    <AlertCircle className="w-3.5 h-3.5" /> {language === 'en' ? 'Passwords do not match' : 'លេខសម្ងាត់មិនត្រូវគ្នាទេ'}
                   </span>
                 )}
               </div>
@@ -232,7 +233,7 @@ export const ChangePasswordModal: React.FC = () => {
               ) : (
                 <>
                   <KeyRound className="w-4 h-4" />
-                  <span>Update Password</span>
+                  <span>{language === 'en' ? 'Update Password' : 'ធ្វើបច្ចុប្បន្នភាពលេខសម្ងាត់'}</span>
                 </>
               )}
             </button>
@@ -242,7 +243,7 @@ export const ChangePasswordModal: React.FC = () => {
         {/* Footer info */}
         <div className="mt-5 pt-4 border-t border-stone-800 text-center">
           <p className="text-[11px] text-stone-400">
-            For security, your password change takes effect immediately across all active sessions.
+            {language === 'en' ? 'For security, your password change takes effect immediately across all active sessions.' : 'សម្រាប់សុវត្ថិភាព ការផ្លាស់ប្តូរលេខសម្ងាត់របស់អ្នកនឹងចូលជាធរមានភ្លាមៗសម្រាប់រាល់សម័យប្រើប្រាស់សកម្មទាំងអស់។'}
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { useStore } from '../../context/StoreContext';
 import { ShieldCheck, Mail, Lock, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export const AdminLoginModal: React.FC = () => {
-  const { login, setCurrentPage } = useStore();
+  const { login, setCurrentPage, language } = useStore();
   const [email, setEmail] = useState('admin@pranith.luxury');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -19,7 +19,7 @@ export const AdminLoginModal: React.FC = () => {
     setLoading(false);
 
     if (!result.success) {
-      setErrorMessage(result.error || 'Invalid credentials. Please verify your email and password.');
+      setErrorMessage(result.error || (language === 'en' ? 'Invalid credentials. Please verify your email and password.' : 'ព័ត៌មានចូលគណនីមិនត្រឹមត្រូវ។ សូមពិនិត្យអ៊ីម៉ែល និងលេខសម្ងាត់របស់អ្នក។'));
     }
   };
 
@@ -36,7 +36,7 @@ export const AdminLoginModal: React.FC = () => {
             ប្រណិត ADMIN SUITE
           </div>
           <p className="text-xs text-stone-400">
-            Secure Role-Based Authentication with Neon PostgreSQL & JWT.
+            {language === 'en' ? 'Secure Role-Based Authentication with Neon PostgreSQL & JWT.' : 'ការផ្ទៀងផ្ទាត់អត្តសញ្ញាណសុវត្ថិភាពតាមតួនាទី ជាមួយ Neon PostgreSQL និង JWT។'}
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export const AdminLoginModal: React.FC = () => {
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
-              Admin Email
+              {language === 'en' ? 'Admin Email' : 'អ៊ីម៉ែលអ្នកគ្រប់គ្រង'}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -72,7 +72,7 @@ export const AdminLoginModal: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-1.5">
-              Secure Password
+              {language === 'en' ? 'Secure Password' : 'លេខសម្ងាត់'}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 text-stone-500 absolute left-3.5 top-3.5" />
@@ -84,7 +84,7 @@ export const AdminLoginModal: React.FC = () => {
                   setPassword(e.target.value);
                   setErrorMessage(null);
                 }}
-                placeholder="Enter password..."
+                placeholder={language === 'en' ? 'Enter password...' : 'បញ្ចូលលេខសម្ងាត់...'}
                 className="w-full bg-stone-950 border border-stone-800 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl px-4 py-3 text-sm text-stone-100 placeholder-stone-600 outline-none pl-10 pr-10 transition"
               />
               <button
@@ -105,7 +105,7 @@ export const AdminLoginModal: React.FC = () => {
             {loading ? (
               <div className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
             ) : (
-              'Authenticate & Enter Suite'
+              language === 'en' ? 'Authenticate & Enter Suite' : 'បញ្ជាក់អត្តសញ្ញាណ និងចូលបន្ទប់គ្រប់គ្រង'
             )}
           </button>
         </form>
@@ -119,7 +119,7 @@ export const AdminLoginModal: React.FC = () => {
             className="w-full text-center text-xs text-stone-400 hover:text-stone-200 flex items-center justify-center gap-1.5 transition font-medium"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Boutique Website</span>
+            <span>{language === 'en' ? 'Return to Boutique Website' : 'ត្រឡប់ទៅគេហទំព័រហាងវិញ'}</span>
           </button>
         </div>
 

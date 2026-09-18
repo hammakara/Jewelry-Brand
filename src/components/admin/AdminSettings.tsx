@@ -15,7 +15,7 @@ import {
 import { StoreSettings } from '../../types';
 
 export const AdminSettings: React.FC = () => {
-  const { settings, updateSettings, showToast, openChangePasswordModal } = useStore();
+  const { settings, updateSettings, showToast, openChangePasswordModal, language } = useStore();
 
   const [formData, setFormData] = useState<StoreSettings>({ ...settings });
   const [newPasscode, setNewPasscode] = useState('');
@@ -29,7 +29,7 @@ export const AdminSettings: React.FC = () => {
     }
     updateSettings(payload);
     setSavedSuccess(true);
-    showToast('Boutique store settings updated successfully!', 'gold');
+    showToast(language === 'en' ? 'Boutique store settings updated successfully!' : 'ការកំណត់ហាងត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ!', 'gold');
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 
@@ -39,10 +39,10 @@ export const AdminSettings: React.FC = () => {
       {/* Header */}
       <div>
         <h2 className="font-serif-luxury text-2xl font-bold text-white">
-          Store & System Configuration
+          {language === 'en' ? 'Store & System Configuration' : 'ការកំណត់រចនាសម្ព័ន្ធហាង និងប្រព័ន្ធ'}
         </h2>
         <p className="text-xs text-white/80">
-          Configure concierge contact lines, exchange rates, boutique addresses, and administrative passcodes.
+          {language === 'en' ? 'Configure concierge contact lines, exchange rates, boutique addresses, and administrative passcodes.' : 'កំណត់រចនាសម្ព័ន្ធបណ្តាញទំនាក់ទំនងសេវាកម្ម អត្រាប្តូរប្រាក់ អាសយដ្ឋានហាង និងលេខសម្ងាត់គ្រប់គ្រង។'}
         </p>
       </div>
 
@@ -51,13 +51,13 @@ export const AdminSettings: React.FC = () => {
         {/* Boutique Branding */}
         <div className="bg-[#523B08] border border-white/20 rounded-2xl p-6 space-y-4 shadow-xl">
           <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            Store Identity
+            {language === 'en' ? 'Store Identity' : 'អត្តសញ្ញាណហាង'}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Store / Brand Name
+                {language === 'en' ? 'Store / Brand Name' : 'ឈ្មោះហាង / ម៉ាកយីហោ'}
               </label>
               <input
                 type="text"
@@ -69,7 +69,7 @@ export const AdminSettings: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Tagline
+                {language === 'en' ? 'Tagline' : 'ពាក្យស្លោក'}
               </label>
               <input
                 type="text"
@@ -84,13 +84,13 @@ export const AdminSettings: React.FC = () => {
         {/* Contact & Concierge */}
         <div className="bg-[#523B08] border border-white/20 rounded-2xl p-6 space-y-4 shadow-xl">
           <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            Concierge Channels (Telegram & Phone)
+            {language === 'en' ? 'Concierge Channels (Telegram & Phone)' : 'បណ្តាញសេវាកម្មទំនាក់ទំនង (Telegram & ទូរសព្ទ)'}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Telegram Username (without @)
+                {language === 'en' ? 'Telegram Username (without @)' : 'ឈ្មោះអ្នកប្រើ Telegram (មិនរាប់ @)'}
               </label>
               <input
                 type="text"
@@ -102,7 +102,7 @@ export const AdminSettings: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Telegram Channel / Direct Link
+                {language === 'en' ? 'Telegram Channel / Direct Link' : 'Telegram Channel / តំណផ្ទាល់'}
               </label>
               <input
                 type="text"
@@ -114,7 +114,7 @@ export const AdminSettings: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Hotline Phone Number
+                {language === 'en' ? 'Hotline Phone Number' : 'លេខទូរសព្ទក្តៅ'}
               </label>
               <input
                 type="text"
@@ -126,7 +126,7 @@ export const AdminSettings: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Official Email
+                {language === 'en' ? 'Official Email' : 'អ៊ីមែលផ្លូវការ'}
               </label>
               <input
                 type="email"
@@ -141,13 +141,13 @@ export const AdminSettings: React.FC = () => {
         {/* Currency & Showroom */}
         <div className="bg-[#523B08] border border-white/20 rounded-2xl p-6 space-y-4 shadow-xl">
           <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-            Currency & Showroom Location
+            {language === 'en' ? 'Currency & Showroom Location' : 'រូបិយប័ណ្ណ និងទីតាំងបន្ទប់តាំងបង្ហាញ'}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                USD to KHR Exchange Rate (1 USD =)
+                {language === 'en' ? 'USD to KHR Exchange Rate (1 USD =)' : 'អត្រាប្តូរប្រាក់ USD ទៅ KHR (1 USD =)'}
               </label>
               <input
                 type="number"
@@ -159,7 +159,7 @@ export const AdminSettings: React.FC = () => {
 
             <div>
               <label className="block text-xs font-bold text-white mb-1">
-                Showroom Operating Hours
+                {language === 'en' ? 'Showroom Operating Hours' : 'ម៉ោងបើកហាង'}
               </label>
               <input
                 type="text"
@@ -171,12 +171,24 @@ export const AdminSettings: React.FC = () => {
 
             <div className="sm:col-span-2">
               <label className="block text-xs font-bold text-white mb-1">
-                Showroom Physical Address
+                {language === 'en' ? 'Showroom Physical Address' : 'អាសយដ្ឋានបន្ទប់តាំងបង្ហាញ'}
               </label>
               <input
                 type="text"
                 value={formData.boutiqueAddress}
                 onChange={(e) => setFormData({ ...formData, boutiqueAddress: e.target.value })}
+                className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-bold text-white mb-1">
+                {language === 'en' ? 'Showroom Physical Address (Khmer)' : 'អាសយដ្ឋានបន្ទប់តាំងបង្ហាញ (ខ្មែរ)'}
+              </label>
+              <input
+                type="text"
+                value={formData.boutiqueAddressKhmer}
+                onChange={(e) => setFormData({ ...formData, boutiqueAddressKhmer: e.target.value })}
                 className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
               />
             </div>
@@ -188,10 +200,10 @@ export const AdminSettings: React.FC = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h3 className="text-xs font-bold uppercase tracking-wider text-white">
-                Admin Password & Credentials
+                {language === 'en' ? 'Admin Password & Credentials' : 'ពាក្យសម្ងាត់ និងលិខិតសម្គាល់អ្នកគ្រប់គ្រង'}
               </h3>
               <p className="text-xs text-white/70 mt-0.5">
-                Update your administrator account password or system fallback passcode.
+                {language === 'en' ? 'Update your administrator account password or system fallback passcode.' : 'ធ្វើបច្ចុប្បន្នភាពពាក្យសម្ងាត់គណនីអ្នកគ្រប់គ្រង ឬលេខសម្ងាត់បម្រុងនៃប្រព័ន្ធ។'}
               </p>
             </div>
 
@@ -201,19 +213,19 @@ export const AdminSettings: React.FC = () => {
               className="px-4 py-2 bg-amber-400 hover:bg-amber-300 text-stone-950 font-bold text-xs rounded-xl transition-all flex items-center gap-2 shadow-md shrink-0"
             >
               <KeyRound className="w-4 h-4" />
-              <span>Change My Password</span>
+              <span>{language === 'en' ? 'Change My Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់របស់ខ្ញុំ'}</span>
             </button>
           </div>
 
           <div className="max-w-xs pt-2 border-t border-white/10">
             <label className="block text-xs font-bold text-white mb-1">
-              Fallback Passcode (leave blank to keep current)
+              {language === 'en' ? 'Fallback Passcode (leave blank to keep current)' : 'លេខសម្ងាត់បម្រុង (ទុកចោលដើម្បីរក្សាលេខសម្ងាត់បច្ចុប្បន្ន)'}
             </label>
             <input
               type="password"
               value={newPasscode}
               onChange={(e) => setNewPasscode(e.target.value)}
-              placeholder="Enter new passcode"
+              placeholder={language === 'en' ? 'Enter new passcode' : 'បញ្ចូលលេខសម្ងាត់ថ្មី'}
               className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
             />
           </div>
@@ -226,11 +238,11 @@ export const AdminSettings: React.FC = () => {
           </div>
           <div className="text-xs space-y-1">
             <div className="font-bold text-white flex items-center gap-2">
-              <span>Cloud Infrastructure: Next.js + PostgreSQL + Cloud Media</span>
-              <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded font-bold">Active ($15/mo)</span>
+              <span>{language === 'en' ? 'Cloud Infrastructure: Next.js + PostgreSQL + Cloud Media' : 'ហេដ្ឋារចនាសម្ព័ន្ធក្លោដ៍: Next.js + PostgreSQL + Cloud Media'}</span>
+              <span className="bg-white/20 text-white text-[10px] px-2 py-0.5 rounded font-bold">{language === 'en' ? 'Active ($15/mo)' : 'សកម្ម ($15/ខែ)'}</span>
             </div>
             <p className="text-white/80">
-              Low-cost, high-performance luxury architecture tailored for $300 MVP build + $15/month managed maintenance.
+              {language === 'en' ? 'Low-cost, high-performance luxury architecture tailored for $300 MVP build + $15/month managed maintenance.' : 'ស្ថាបត្យកម្មប្រណិតមានតម្លៃទាប ដំណើរការល្បឿនលឿន រៀបចំសម្រាប់ការកសាង MVP $300 + ការថែទាំគ្រប់គ្រង $15/ខែ។'}
             </p>
           </div>
         </div>
@@ -240,7 +252,7 @@ export const AdminSettings: React.FC = () => {
           {savedSuccess && (
             <span className="text-xs text-emerald-300 flex items-center gap-1 font-bold">
               <CheckCircle className="w-4 h-4" />
-              <span>Settings Saved!</span>
+              <span>{language === 'en' ? 'Settings Saved!' : 'បានរក្សាទុកការកំណត់!'}</span>
             </span>
           )}
           <button
@@ -248,7 +260,7 @@ export const AdminSettings: React.FC = () => {
             className="px-6 py-3 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-widest rounded-lg transition-colors flex items-center gap-2 shadow-xl"
           >
             <Save className="w-4 h-4" />
-            <span>Save All Store Settings</span>
+            <span>{language === 'en' ? 'Save All Store Settings' : 'រក្សាទុកការកំណត់ហាងទាំងអស់'}</span>
           </button>
         </div>
 

@@ -18,7 +18,7 @@ import {
 import { OrderRequest, OrderStatus } from '../../types';
 
 export const AdminOrders: React.FC = () => {
-  const { orders, updateOrderStatus, updateOrderAdminNotes, deleteOrder, settings } = useStore();
+  const { orders, updateOrderStatus, updateOrderAdminNotes, deleteOrder, settings, language } = useStore();
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,6 +57,16 @@ export const AdminOrders: React.FC = () => {
     return `https://t.me/${cleanUsername}`;
   };
 
+  const getStatusLabel = (s: string) => {
+    if (s === 'ALL') return language === 'en' ? 'ALL' : 'ទាំងអស់';
+    if (s === 'PENDING') return language === 'en' ? 'PENDING' : 'កំពុងរង់ចាំ';
+    if (s === 'CONTACTED') return language === 'en' ? 'CONTACTED' : 'បានទាក់ទង';
+    if (s === 'CONFIRMED') return language === 'en' ? 'CONFIRMED' : 'បានបញ្ជាក់';
+    if (s === 'COMPLETED') return language === 'en' ? 'COMPLETED' : 'បានបញ្ចប់';
+    if (s === 'CANCELLED') return language === 'en' ? 'CANCELLED' : 'បានលុបចោល';
+    return s;
+  };
+
   return (
     <div className="space-y-6">
       
@@ -64,17 +74,17 @@ export const AdminOrders: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-serif-luxury text-2xl font-bold text-white">
-            Customer Order Inquiries
+            {language === 'en' ? 'Customer Order Inquiries' : 'សំណួរកុម្ម៉ង់របស់អតិថិជន'}
           </h2>
           <p className="text-xs text-white/80">
-            Fulfill "Contact to Order" requests, change pipeline statuses, and record boutique notes.
+            {language === 'en' ? 'Fulfill "Contact to Order" requests, change pipeline statuses, and record boutique notes.' : 'បំពេញសំណើ "ទាក់ទងដើម្បីកុម្ម៉ង់" ផ្លាស់ប្តូរស្ថានភាពបន្ទរ និងកត់ត្រាកំណត់ចំណាំប៊ូទិក។'}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/80 font-medium">Total in Pipeline:</span>
+          <span className="text-xs text-white/80 font-medium">{language === 'en' ? 'Total in Pipeline:' : 'សរុបក្នុងបន្ទរ:'}</span>
           <span className="px-3 py-1 bg-[#3D2B05] border border-white/30 text-white font-mono font-bold text-xs rounded-lg shadow-sm">
-            {orders.length} Requests
+            {orders.length} {language === 'en' ? 'Requests' : 'សំណើ'}
           </span>
         </div>
       </div>
@@ -98,7 +108,7 @@ export const AdminOrders: React.FC = () => {
                     : 'bg-[#3D2B05] text-white/80 hover:text-white hover:bg-[#322303]'
                 }`}
               >
-                {st} ({count})
+                {getStatusLabel(st)} ({count})
               </button>
             );
           })}
@@ -110,7 +120,7 @@ export const AdminOrders: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by order ID (PRL-...), customer name, phone, telegram handle, product..."
+            placeholder={language === 'en' ? 'Search by order ID (PRL-...), customer name, phone, telegram handle, product...' : 'ស្វែងរកដោយលេខកុម្ម៉ង់ (PRL-...), ឈ្មោះអតិថិជន, ទូរស័ព្ទ, telegram, ផលិតផល...'}
             className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2.5 text-xs text-white placeholder-white/50 outline-none pl-9"
           />
           <Search className="w-4 h-4 text-white/60 absolute left-3 top-3" />
@@ -123,12 +133,12 @@ export const AdminOrders: React.FC = () => {
           <table className="w-full text-left text-xs text-white/90">
             <thead className="bg-[#3D2B05] text-white/80 uppercase tracking-wider text-[11px] border-b border-white/15">
               <tr>
-                <th className="py-3 px-4">Order ID & Date</th>
-                <th className="py-3 px-4">Customer Details</th>
-                <th className="py-3 px-4">Item & Qty</th>
-                <th className="py-3 px-4">Total</th>
-                <th className="py-3 px-4">Status Flow</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Order ID & Date' : 'លេខកុម្ម៉ង់ និងកាលបរិច្ឆេទ'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Customer Details' : 'ព័ត៌មានអតិថិជន'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Item & Qty' : 'ទំនិញ និងបរិមាណ'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Total' : 'សរុប'}</th>
+                <th className="py-3 px-4">{language === 'en' ? 'Status Flow' : 'លំហូរស្ថានភាព'}</th>
+                <th className="py-3 px-4 text-right">{language === 'en' ? 'Actions' : 'សកម្មភាព'}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
@@ -162,7 +172,7 @@ export const AdminOrders: React.FC = () => {
                       />
                       <div className="min-w-0">
                         <div className="font-medium text-white truncate max-w-xs">{order.productName}</div>
-                        <div className="text-[10px] text-white/70">Qty: {order.quantity}</div>
+                        <div className="text-[10px] text-white/70">{language === 'en' ? 'Qty:' : 'បរិមាណ:'} {order.quantity}</div>
                       </div>
                     </div>
                   </td>
@@ -192,11 +202,11 @@ export const AdminOrders: React.FC = () => {
                           : 'bg-rose-900/90 text-rose-200 border-rose-400'
                       }`}
                     >
-                      <option value="PENDING">PENDING</option>
-                      <option value="CONTACTED">CONTACTED</option>
-                      <option value="CONFIRMED">CONFIRMED</option>
-                      <option value="COMPLETED">COMPLETED</option>
-                      <option value="CANCELLED">CANCELLED</option>
+                      <option value="PENDING">{language === 'en' ? 'PENDING' : 'កំពុងរង់ចាំ'}</option>
+                      <option value="CONTACTED">{language === 'en' ? 'CONTACTED' : 'បានទាក់ទង'}</option>
+                      <option value="CONFIRMED">{language === 'en' ? 'CONFIRMED' : 'បានបញ្ជាក់'}</option>
+                      <option value="COMPLETED">{language === 'en' ? 'COMPLETED' : 'បានបញ្ចប់'}</option>
+                      <option value="CANCELLED">{language === 'en' ? 'CANCELLED' : 'បានលុបចោល'}</option>
                     </select>
                   </td>
 
@@ -206,7 +216,7 @@ export const AdminOrders: React.FC = () => {
                       <button
                         onClick={() => openOrderDetail(order)}
                         className="p-1.5 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white rounded transition-colors"
-                        title="View Full Details"
+                        title={language === 'en' ? 'View Full Details' : 'មើលព័ត៌មានលម្អិត'}
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
@@ -217,7 +227,7 @@ export const AdminOrders: React.FC = () => {
                           target="_blank"
                           rel="noreferrer"
                           className="p-1.5 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white rounded transition-colors"
-                          title="Open Telegram Chat"
+                          title={language === 'en' ? 'Open Telegram Chat' : 'បើកការជជែក Telegram'}
                         >
                           <Send className="w-3.5 h-3.5" />
                         </a>
@@ -225,12 +235,12 @@ export const AdminOrders: React.FC = () => {
 
                       <button
                         onClick={() => {
-                          if (window.confirm(`Delete order inquiry #${order.id}?`)) {
+                          if (window.confirm(language === 'en' ? `Delete order inquiry #${order.id}?` : `លុបសំណួរកុម្ម៉ង់ #${order.id}?`)) {
                             deleteOrder(order.id);
                           }
                         }}
                         className="p-1.5 bg-[#3D2B05] hover:bg-rose-600 text-white rounded transition-colors"
-                        title="Delete Request"
+                        title={language === 'en' ? 'Delete Request' : 'លុបសំណើ'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -251,7 +261,7 @@ export const AdminOrders: React.FC = () => {
             
             <div className="flex items-center justify-between border-b border-white/15 pb-3">
               <div>
-                <span className="text-xs uppercase tracking-widest text-white/80 font-bold">Order Request Dossier</span>
+                <span className="text-xs uppercase tracking-widest text-white/80 font-bold">{language === 'en' ? 'Order Request Dossier' : 'ឯកសារសំណើកុម្ម៉ង់'}</span>
                 <h3 className="font-serif-luxury text-xl font-bold text-white">
                   #{selectedOrder.id}
                 </h3>
@@ -266,7 +276,7 @@ export const AdminOrders: React.FC = () => {
               
               {/* Product summary */}
               <div className="bg-[#3D2B05] p-4 rounded-xl border border-white/20 space-y-3">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white">Item Ordered</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white">{language === 'en' ? 'Item Ordered' : 'ទំនិញដែលបានកុម្ម៉ង់'}</h4>
                 <div className="flex items-center gap-3">
                   <img
                     src={selectedOrder.productImage}
@@ -275,7 +285,7 @@ export const AdminOrders: React.FC = () => {
                   />
                   <div>
                     <h5 className="font-bold text-sm text-white">{selectedOrder.productName}</h5>
-                    <div className="text-xs text-white/70 mt-1">Quantity: {selectedOrder.quantity}</div>
+                    <div className="text-xs text-white/70 mt-1">{language === 'en' ? 'Quantity:' : 'បរិមាណ:'} {selectedOrder.quantity}</div>
                     <div className="text-base font-mono font-bold text-white mt-0.5">${selectedOrder.totalAmount}</div>
                   </div>
                 </div>
@@ -283,7 +293,7 @@ export const AdminOrders: React.FC = () => {
 
               {/* Customer details */}
               <div className="bg-[#3D2B05] p-4 rounded-xl border border-white/20 space-y-2 text-xs">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-white">Customer Details</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-white">{language === 'en' ? 'Customer Details' : 'ព័ត៌មានអតិថិជន'}</h4>
                 <div className="text-white font-bold text-sm">{selectedOrder.customerName}</div>
                 <div className="text-white/85 flex items-center gap-2">
                   <Phone className="w-3.5 h-3.5 text-white" />
@@ -296,7 +306,7 @@ export const AdminOrders: React.FC = () => {
                   </div>
                 )}
                 <div className="text-white/70 pt-1">
-                  Preferred Contact: <strong className="text-white uppercase">{selectedOrder.preferredContact}</strong>
+                  {language === 'en' ? 'Preferred Contact:' : 'ការទាក់ទងដែលពេញចិត្ត:'} <strong className="text-white uppercase">{selectedOrder.preferredContact}</strong>
                 </div>
               </div>
 
@@ -308,7 +318,7 @@ export const AdminOrders: React.FC = () => {
                 <div className="bg-[#3D2B05] p-3 rounded-xl border border-white/20 flex items-start gap-2">
                   <MapPin className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-white block font-bold">Delivery Destination:</strong>
+                    <strong className="text-white block font-bold">{language === 'en' ? 'Delivery Destination:' : 'ទីតាំងដឹកជញ្ជូន:'}</strong>
                     <span className="text-white/80">{selectedOrder.customerAddress}</span>
                   </div>
                 </div>
@@ -318,7 +328,7 @@ export const AdminOrders: React.FC = () => {
                 <div className="bg-[#3D2B05] p-3 rounded-xl border border-white/20 flex items-start gap-2">
                   <FileText className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
-                    <strong className="text-white block font-bold">Customer Custom Note / Request:</strong>
+                    <strong className="text-white block font-bold">{language === 'en' ? 'Customer Custom Note / Request:' : 'កំណត់ចំណាំ / សំណើរបស់អតិថិជន:'}</strong>
                     <span className="text-white/80">{selectedOrder.customerNotes}</span>
                   </div>
                 </div>
@@ -328,13 +338,13 @@ export const AdminOrders: React.FC = () => {
             {/* Admin Internal Notes */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-white">
-                Admin Concierge Internal Notes (Tracking #, Sizing notes, Ring specs, etc.)
+                {language === 'en' ? 'Admin Concierge Internal Notes (Tracking #, Sizing notes, Ring specs, etc.)' : 'កំណត់ចំណាំផ្ទៃក្នុងរបស់អ្នកគ្រប់គ្រង (លេខតាមដាន, កំណត់ចំណាំទំហំ, លម្អិតចិញ្ចៀន ។ល។)'}
               </label>
               <textarea
                 rows={3}
                 value={editingAdminNotes}
                 onChange={(e) => setEditingAdminNotes(e.target.value)}
-                placeholder="e.g. Spoke with customer on Telegram. Requested 45cm chain. Delivery scheduled for Friday 2pm."
+                placeholder={language === 'en' ? 'e.g. Spoke with customer on Telegram. Requested 45cm chain. Delivery scheduled for Friday 2pm.' : 'ឧ. បាននិយាយជាមួយអតិថិជនតាម Telegram។ បានស្នើសុំស្ពាន់ 45សម។ ការដឹកជញ្ជូនគ្រោងធ្វើនៅថ្ងៃសុក្រម៉ោង 2។'}
                 className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg p-3 text-xs text-white outline-none resize-none"
               />
               <button
@@ -342,14 +352,14 @@ export const AdminOrders: React.FC = () => {
                 onClick={handleSaveNotes}
                 className="px-4 py-1.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase rounded-lg transition-colors shadow-sm"
               >
-                Save Notes
+                {language === 'en' ? 'Save Notes' : 'រក្សាទុកកំណត់ចំណាំ'}
               </button>
             </div>
 
             {/* Status & Actions Footer */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-white/15">
               <div className="flex items-center gap-2">
-                <span className="text-xs text-white/80 font-medium">Update Status:</span>
+                <span className="text-xs text-white/80 font-medium">{language === 'en' ? 'Update Status:' : 'ធ្វើបច្ចុប្បន្នភាពស្ថានភាព:'}</span>
                 <select
                   value={selectedOrder.status}
                   onChange={(e) => {
@@ -359,11 +369,11 @@ export const AdminOrders: React.FC = () => {
                   }}
                   className="bg-[#3D2B05] border border-white/40 text-white font-bold text-xs rounded-lg px-3 py-1.5 outline-none"
                 >
-                  <option value="PENDING" className="bg-[#3D2B05]">PENDING</option>
-                  <option value="CONTACTED" className="bg-[#3D2B05]">CONTACTED</option>
-                  <option value="CONFIRMED" className="bg-[#3D2B05]">CONFIRMED</option>
-                  <option value="COMPLETED" className="bg-[#3D2B05]">COMPLETED</option>
-                  <option value="CANCELLED" className="bg-[#3D2B05]">CANCELLED</option>
+                  <option value="PENDING" className="bg-[#3D2B05]">{language === 'en' ? 'PENDING' : 'កំពុងរង់ចាំ'}</option>
+                  <option value="CONTACTED" className="bg-[#3D2B05]">{language === 'en' ? 'CONTACTED' : 'បានទាក់ទង'}</option>
+                  <option value="CONFIRMED" className="bg-[#3D2B05]">{language === 'en' ? 'CONFIRMED' : 'បានបញ្ជាក់'}</option>
+                  <option value="COMPLETED" className="bg-[#3D2B05]">{language === 'en' ? 'COMPLETED' : 'បានបញ្ចប់'}</option>
+                  <option value="CANCELLED" className="bg-[#3D2B05]">{language === 'en' ? 'CANCELLED' : 'បានលុបចោល'}</option>
                 </select>
               </div>
 
@@ -376,14 +386,14 @@ export const AdminOrders: React.FC = () => {
                     className="px-4 py-2 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-wider rounded-lg flex items-center gap-1.5 shadow-md"
                   >
                     <Send className="w-3.5 h-3.5" />
-                    <span>Open Telegram Chat</span>
+                    <span>{language === 'en' ? 'Open Telegram Chat' : 'បើកការជជែក Telegram'}</span>
                   </a>
                 )}
                 <button
                   onClick={() => setSelectedOrder(null)}
                   className="px-4 py-2 border border-white/30 text-white text-xs font-bold rounded-lg hover:bg-[#3D2B05]"
                 >
-                  Close
+                  {language === 'en' ? 'Close' : 'បិទ'}
                 </button>
               </div>
             </div>

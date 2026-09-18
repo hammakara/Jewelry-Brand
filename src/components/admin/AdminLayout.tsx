@@ -27,7 +27,7 @@ import { AdminLoginModal } from './AdminLoginModal';
 import { ShieldAlert, ShieldCheck, UserCheck } from 'lucide-react';
 
 export const AdminLayout: React.FC = () => {
-  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser, openChangePasswordModal } = useStore();
+  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser, openChangePasswordModal, language } = useStore();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -38,13 +38,13 @@ export const AdminLayout: React.FC = () => {
   const pendingOrderCount = orders.filter(o => o.status === 'PENDING').length;
 
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'categories', label: 'Categories', icon: Layers },
-    { id: 'orders', label: 'Customer Orders', icon: ShoppingBag, badge: pendingOrderCount },
-    { id: 'customers', label: 'Customers (CRM)', icon: Users },
-    { id: 'team', label: 'Users & Security', icon: ShieldCheck },
-    { id: 'settings', label: 'Store Settings', icon: Settings },
+    { id: 'dashboard', label: language === 'en' ? 'Dashboard' : 'ផ្ទាំងគ្រប់គ្រង', icon: LayoutDashboard },
+    { id: 'products', label: language === 'en' ? 'Products' : 'ផលិតផល', icon: Package },
+    { id: 'categories', label: language === 'en' ? 'Categories' : 'ប្រភេទទំនិញ', icon: Layers },
+    { id: 'orders', label: language === 'en' ? 'Customer Orders' : 'ការកុម្ម៉ង់អតិថិជន', icon: ShoppingBag, badge: pendingOrderCount },
+    { id: 'customers', label: language === 'en' ? 'Customers (CRM)' : 'អតិថិជន (CRM)', icon: Users },
+    { id: 'team', label: language === 'en' ? 'Users & Security' : 'អ្នកប្រើប្រាស់ និងសុវត្ថិភាព', icon: ShieldCheck },
+    { id: 'settings', label: language === 'en' ? 'Store Settings' : 'ការកំណត់ហាង', icon: Settings },
   ];
 
   return (
@@ -85,7 +85,7 @@ export const AdminLayout: React.FC = () => {
                 ប្រណិត ADMIN
               </div>
               <div className="text-[10px] text-white/80 tracking-wider uppercase font-semibold">
-                PRANITH Boutique Suite
+                {language === 'en' ? 'PRANITH Boutique Suite' : 'ឈុតគ្រប់គ្រង PRANITH'}
               </div>
             </div>
           </div>
@@ -145,7 +145,7 @@ export const AdminLayout: React.FC = () => {
 
               <button
                 onClick={openChangePasswordModal}
-                title="Change My Password"
+                title={language === 'en' ? 'Change My Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់របស់ខ្ញុំ'}
                 className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-amber-200 transition-colors shrink-0"
               >
                 <KeyRound className="w-3.5 h-3.5" />
@@ -158,7 +158,7 @@ export const AdminLayout: React.FC = () => {
             className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-amber-200 hover:bg-[#3D2B05] hover:text-white transition-colors"
           >
             <KeyRound className="w-4 h-4 text-amber-300" />
-            <span>Change My Password</span>
+            <span>{language === 'en' ? 'Change My Password' : 'ផ្លាស់ប្តូរលេខសម្ងាត់របស់ខ្ញុំ'}</span>
           </button>
 
           <button
@@ -166,7 +166,7 @@ export const AdminLayout: React.FC = () => {
             className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-white/90 hover:bg-[#3D2B05] hover:text-white transition-colors"
           >
             <ExternalLink className="w-4 h-4 text-white" />
-            <span>Live Boutique Store</span>
+            <span>{language === 'en' ? 'Live Boutique Store' : 'ហាងអនឡាញពិត'}</span>
           </button>
 
           <button
@@ -174,7 +174,7 @@ export const AdminLayout: React.FC = () => {
             className="w-full flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-semibold text-rose-200 hover:bg-rose-900/60 hover:text-white transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            <span>Sign Out</span>
+            <span>{language === 'en' ? 'Sign Out' : 'ចាកចេញ'}</span>
           </button>
         </div>
 

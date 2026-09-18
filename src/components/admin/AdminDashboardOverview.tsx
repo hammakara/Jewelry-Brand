@@ -21,7 +21,7 @@ interface Props {
 }
 
 export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
-  const { products, orders, categories, customers, updateOrderStatus, settings } = useStore();
+  const { products, orders, categories, customers, updateOrderStatus, settings, language } = useStore();
 
   const totalProducts = products.length;
   const newRequests = orders.filter(o => o.status === 'PENDING').length;
@@ -51,13 +51,13 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
         <div>
           <div className="flex items-center gap-2 text-xs uppercase font-bold tracking-widest text-white/90">
             <Sparkles className="w-4 h-4 text-white" />
-            <span>Maison Management Engine</span>
+            <span>{language === 'en' ? 'Maison Management Engine' : 'ម៉ាទ័រគ្រប់គ្រង Maison'}</span>
           </div>
           <h2 className="font-serif-luxury text-2xl sm:text-3xl font-bold text-white mt-1">
-            Boutique Operations Overview
+            {language === 'en' ? 'Boutique Operations Overview' : 'ទិដ្ឋភាពទូទៅនៃប្រតិបត្តិការហាង'}
           </h2>
           <p className="text-xs text-white/80 mt-1">
-            Real-time pipeline of pearl inventory, customer order inquiries, and sales fulfillment.
+            {language === 'en' ? 'Real-time pipeline of pearl inventory, customer order inquiries, and sales fulfillment.' : 'បន្ទរពេលវេលាពិតនៃស្តុកគុជខ្យង សំណើកុម្ម៉ង់អតិថិជន និងការបំពេញការលក់។'}
           </p>
         </div>
 
@@ -67,13 +67,13 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
             className="px-4 py-2.5 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1.5 shadow"
           >
             <Package className="w-3.5 h-3.5" />
-            <span>+ Add Product</span>
+            <span>{language === 'en' ? '+ Add Product' : '+ បន្ថែមផលិតផល'}</span>
           </button>
           <button
             onClick={() => setActiveTab('orders')}
             className="px-4 py-2.5 bg-[#3D2B05] hover:bg-[#322303] text-white border border-white/30 text-xs font-bold uppercase tracking-wider rounded-lg transition-colors flex items-center gap-1.5"
           >
-            <span>View All Orders ({orders.length})</span>
+            <span>{language === 'en' ? `View All Orders (${orders.length})` : `មើលកុម្ម៉ង់ទាំងអស់ (${orders.length})`}</span>
           </button>
         </div>
       </div>
@@ -87,14 +87,14 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
           className="bg-[#523B08] border border-white/20 hover:border-white p-5 rounded-2xl cursor-pointer transition-all shadow-md group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-white/80">Total Products</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-white/80">{language === 'en' ? 'Total Products' : 'ផលិតផលសរុប'}</span>
             <div className="p-2 bg-[#3D2B05] rounded-lg text-white group-hover:bg-white group-hover:text-[#523D0C] transition-colors border border-white/20">
               <Package className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white font-mono mt-3">{totalProducts}</div>
           <div className="text-[11px] text-white/70 mt-1 flex items-center justify-between">
-            <span>Across {categories.length} categories</span>
+            <span>{language === 'en' ? `Across ${categories.length} categories` : `ក្នុង ${categories.length} ប្រភេទ`}</span>
             <ChevronRight className="w-3.5 h-3.5 text-white" />
           </div>
         </div>
@@ -105,14 +105,14 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
           className="bg-[#523B08] border border-amber-400/40 hover:border-amber-300 p-5 rounded-2xl cursor-pointer transition-all shadow-md group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-200">New Requests</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-200">{language === 'en' ? 'New Requests' : 'សំណើថ្មី'}</span>
             <div className="p-2 bg-amber-900/60 rounded-lg text-amber-200 group-hover:bg-amber-300 group-hover:text-[#523D0C] transition-colors border border-amber-400/40">
               <Clock className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white font-mono mt-3">{newRequests}</div>
           <div className="text-[11px] text-amber-200 mt-1 flex items-center justify-between font-medium">
-            <span>Requires customer contact</span>
+            <span>{language === 'en' ? 'Requires customer contact' : 'ទាមទារការទំនាក់ទំនងជាមួយអតិថិជន'}</span>
             <span className="w-2 h-2 rounded-full bg-amber-300 animate-pulse"></span>
           </div>
         </div>
@@ -123,14 +123,14 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
           className="bg-[#523B08] border border-sky-400/40 hover:border-sky-300 p-5 rounded-2xl cursor-pointer transition-all shadow-md group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-sky-200">Pending Orders</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-200">{language === 'en' ? 'Pending Orders' : 'ការកុម្ម៉ង់កំពុងរង់ចាំ'}</span>
             <div className="p-2 bg-sky-900/60 rounded-lg text-sky-200 group-hover:bg-sky-300 group-hover:text-[#523D0C] transition-colors border border-sky-400/40">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white font-mono mt-3">{pendingOrders}</div>
           <div className="text-[11px] text-sky-200 mt-1 font-medium">
-            Contacted & confirmed
+            {language === 'en' ? 'Contacted & confirmed' : 'បានទាក់ទង និងបានបញ្ជាក់'}
           </div>
         </div>
 
@@ -140,14 +140,14 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
           className="bg-[#523B08] border border-emerald-400/40 hover:border-emerald-300 p-5 rounded-2xl cursor-pointer transition-all shadow-md group"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">Completed Orders</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">{language === 'en' ? 'Completed Orders' : 'ការកុម្ម៉ង់បានបញ្ចប់'}</span>
             <div className="p-2 bg-emerald-900/60 rounded-lg text-emerald-200 group-hover:bg-emerald-300 group-hover:text-[#523D0C] transition-colors border border-emerald-400/40">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="text-3xl font-bold text-white font-mono mt-3">{completedOrders}</div>
           <div className="text-[11px] text-emerald-200 mt-1 font-medium">
-            Revenue: ${totalRevenue.toLocaleString()}
+            {language === 'en' ? `Revenue: $${totalRevenue.toLocaleString()}` : `ចំណូល៖ $${totalRevenue.toLocaleString()}`}
           </div>
         </div>
 
@@ -160,7 +160,7 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
             <DollarSign className="w-6 h-6" />
           </div>
           <div>
-            <div className="text-xs text-white/80 uppercase font-semibold">Active Pipeline Gross Value</div>
+            <div className="text-xs text-white/80 uppercase font-semibold">{language === 'en' ? 'Active Pipeline Gross Value' : 'តម្លៃសរុបនៃកុម្ម៉ង់សកម្ម'}</div>
             <div className="text-2xl font-bold text-white font-mono">
               ${pipelineValue.toLocaleString()} <span className="text-xs text-white/70 font-normal">USD (~{(pipelineValue * settings.exchangeRateKhr).toLocaleString()} KHR)</span>
             </div>
@@ -168,8 +168,8 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
         </div>
 
         <div className="text-xs text-white/80 text-right">
-          <div>Maintenance Plan: <strong className="text-emerald-300 font-bold">$15/mo active</strong></div>
-          <div className="text-[11px] text-white/60">Database: Neon PostgreSQL Schema Synced</div>
+          <div>{language === 'en' ? 'Maintenance Plan: ' : 'គម្រោងថែទាំ៖ '}<strong className="text-emerald-300 font-bold">{language === 'en' ? '$15/mo active' : '$15/ខែ សកម្ម'}</strong></div>
+          <div className="text-[11px] text-white/60">{language === 'en' ? 'Database: Neon PostgreSQL Schema Synced' : 'មូលដ្ឋានទិន្នន័យ៖ Neon PostgreSQL ត្រូវបានធ្វើសមកាលកម្ម Schema រួចរាល់'}</div>
         </div>
       </div>
 
@@ -179,14 +179,14 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-white" />
             <h3 className="font-serif-luxury text-lg font-bold text-white">
-              Recent Order Requests
+              {language === 'en' ? 'Recent Order Requests' : 'ការស្នើសុំកុម្ម៉ង់ថ្មីៗ'}
             </h3>
           </div>
           <button
             onClick={() => setActiveTab('orders')}
             className="text-xs text-white underline hover:text-white/80 font-bold"
           >
-            Manage All ({orders.length}) &rarr;
+            {language === 'en' ? `Manage All (${orders.length})` : `គ្រប់គ្រងទាំងអស់ (${orders.length})`} &rarr;
           </button>
         </div>
 
@@ -208,7 +208,7 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
                   </div>
                   <h4 className="font-bold text-sm text-white truncate">{order.productName}</h4>
                   <div className="text-xs text-white/75">
-                    Qty: {order.quantity} &bull; <strong className="text-white">${order.totalAmount}</strong>
+                    {language === 'en' ? `Qty: ${order.quantity}` : `ចំនួន: ${order.quantity}`} &bull; <strong className="text-white">${order.totalAmount}</strong>
                   </div>
                 </div>
               </div>
@@ -239,11 +239,11 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
                       : 'bg-rose-900/90 text-rose-200 border-rose-400'
                   }`}
                 >
-                  <option value="PENDING">PENDING</option>
-                  <option value="CONTACTED">CONTACTED</option>
-                  <option value="CONFIRMED">CONFIRMED</option>
-                  <option value="COMPLETED">COMPLETED</option>
-                  <option value="CANCELLED">CANCELLED</option>
+                  <option value="PENDING">{language === 'en' ? 'PENDING' : 'កំពុងរង់ចាំ'}</option>
+                  <option value="CONTACTED">{language === 'en' ? 'CONTACTED' : 'បានទាក់ទង'}</option>
+                  <option value="CONFIRMED">{language === 'en' ? 'CONFIRMED' : 'បានបញ្ជាក់'}</option>
+                  <option value="COMPLETED">{language === 'en' ? 'COMPLETED' : 'បានបញ្ចប់'}</option>
+                  <option value="CANCELLED">{language === 'en' ? 'CANCELLED' : 'បានលុបចោល'}</option>
                 </select>
 
                 {/* Direct Telegram click */}
@@ -253,7 +253,7 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
                     target="_blank"
                     rel="noreferrer"
                     className="p-2 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white rounded-lg border border-white/20 transition-colors shadow-sm"
-                    title="Open Telegram Chat with Customer"
+                    title={language === 'en' ? 'Open Telegram Chat with Customer' : 'បើកការជជែក Telegram ជាមួយអតិថិជន'}
                   >
                     <Send className="w-4 h-4" />
                   </a>
@@ -263,7 +263,7 @@ export const AdminDashboardOverview: React.FC<Props> = ({ setActiveTab }) => {
                 <a
                   href={`tel:${order.customerPhone}`}
                   className="p-2 bg-[#3D2B05] hover:bg-emerald-600 hover:text-white text-white rounded-lg border border-white/20 transition-colors shadow-sm"
-                  title="Call Customer"
+                  title={language === 'en' ? 'Call Customer' : 'ទូរស័ព្ទទៅអតិថិជន'}
                 >
                   <Phone className="w-4 h-4" />
                 </a>
