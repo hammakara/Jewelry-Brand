@@ -299,6 +299,26 @@ export const AdminProducts: React.FC = () => {
         </div>
       </div>
 
+      {/* Inventory Summary Strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-[#523B08] border border-emerald-400/30 rounded-xl px-4 py-3 shadow-md">
+          <div className="text-[10px] uppercase tracking-wider text-emerald-200/80 font-bold">{language === 'en' ? 'In Stock' : 'មានស្តុក'}</div>
+          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'in_stock').length}</div>
+        </div>
+        <div className="bg-[#523B08] border border-amber-400/30 rounded-xl px-4 py-3 shadow-md">
+          <div className="text-[10px] uppercase tracking-wider text-amber-200/80 font-bold">{language === 'en' ? 'Limited' : 'មានកំណត់'}</div>
+          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'limited').length}</div>
+        </div>
+        <div className="bg-[#523B08] border border-purple-400/30 rounded-xl px-4 py-3 shadow-md">
+          <div className="text-[10px] uppercase tracking-wider text-purple-200/80 font-bold">{language === 'en' ? 'Made to Order' : 'ផលិតតាមបញ្ជា'}</div>
+          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'made_to_order').length}</div>
+        </div>
+        <div className="bg-[#523B08] border border-rose-400/30 rounded-xl px-4 py-3 shadow-md">
+          <div className="text-[10px] uppercase tracking-wider text-rose-200/80 font-bold">{language === 'en' ? 'Out of Stock' : 'អស់ស្តុក'}</div>
+          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'out_of_stock').length}</div>
+        </div>
+      </div>
+
       {/* Products Table */}
       <div className="bg-[#523B08] border border-white/20 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">

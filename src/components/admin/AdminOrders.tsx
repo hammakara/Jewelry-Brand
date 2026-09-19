@@ -97,15 +97,23 @@ export const AdminOrders: React.FC = () => {
           {['ALL', 'PENDING', 'CONTACTED', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map((st) => {
             const count = st === 'ALL' ? orders.length : orders.filter(o => o.status === st).length;
             const isSelected = statusFilter === st;
+            const statusClass: Record<string, string> = {
+              ALL: 'bg-white text-[#523D0C]',
+              PENDING: 'bg-amber-400 text-stone-900',
+              CONTACTED: 'bg-sky-400 text-stone-900',
+              CONFIRMED: 'bg-purple-400 text-stone-900',
+              COMPLETED: 'bg-emerald-400 text-stone-900',
+              CANCELLED: 'bg-rose-400 text-stone-900',
+            };
 
             return (
               <button
                 key={st}
                 onClick={() => setStatusFilter(st)}
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider shrink-0 transition-all ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider shrink-0 transition-all border ${
                   isSelected
-                    ? 'bg-white text-[#523D0C] shadow-md'
-                    : 'bg-[#3D2B05] text-white/80 hover:text-white hover:bg-[#322303]'
+                    ? `${statusClass[st]} shadow-lg border-transparent`
+                    : 'bg-[#3D2B05] text-white/80 hover:text-white hover:bg-[#322303] border-white/15'
                 }`}
               >
                 {getStatusLabel(st)} ({count})
@@ -142,6 +150,22 @@ export const AdminOrders: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/10">
+              {filteredOrders.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center">
+                    <div className="inline-flex flex-col items-center gap-2 text-white/50">
+                      <Search className="w-8 h-8" />
+                      <p className="text-sm text-white/70">{language === 'en' ? 'No orders match the current filter.' : 'គ្មានកុម្ម៉ង់ដែលត្រូវនឹងតម្រងបច្ចុប្បន្នទេ។'}</p>
+                      <button
+                        onClick={() => { setStatusFilter('ALL'); setSearchQuery(''); }}
+                        className="text-xs font-bold text-amber-300 underline hover:text-white"
+                      >
+                        {language === 'en' ? 'Reset filters' : 'កំណត់ឡើងវិញ'}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
               {filteredOrders.map((order) => (
                 <tr key={order.id} className="hover:bg-[#442F05] transition-colors">
                   
