@@ -11,7 +11,11 @@ import {
   X, 
   ChevronDown,
   DollarSign,
-  RotateCcw
+  RotateCcw,
+  Gem,
+  Diamond,
+  Crown,
+  CircleDot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PearlType, Product } from '../types';
@@ -113,6 +117,15 @@ export const ShopPage: React.FC = () => {
     { label: 'Baroque (គុជរាងសេរី)', value: 'Baroque' },
   ];
 
+  const categoryIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+    'pearl-necklace': Gem,
+    'pearl-earrings': Sparkles,
+    'pearl-bracelet': CircleDot,
+    'pearl-ring': Diamond,
+    'pearl-set': Crown,
+    accessories: Gem,
+  };
+
   const handleMaxPriceChange = (value: number) => {
     setIsPriceCustomized(true);
     setMaxPrice(value);
@@ -177,29 +190,32 @@ export const ShopPage: React.FC = () => {
         <div className="flex items-center justify-start sm:justify-center overflow-x-auto pb-2 gap-2 scrollbar-none">
           <button
             onClick={() => setSelectedCategorySlug(null)}
-            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all shrink-0 ${
+            className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all shrink-0 flex items-center gap-1.5 ${
               !selectedCategorySlug
                 ? 'bg-white text-[#523D0C] shadow-lg'
                 : 'bg-[#523B08] text-white/80 hover:text-white border border-white/20'
             }`}
           >
+            <Sparkles className="w-3.5 h-3.5" />
             {language === 'en' ? 'All Collections' : 'ទាំងអស់'} ({products.length})
           </button>
           
           {categories.map((c) => {
             const isSelected = selectedCategorySlug === c.slug;
             const count = products.filter(p => p.categoryId === c.id).length;
+            const Icon = categoryIcons[c.slug] || Gem;
 
             return (
               <button
                 key={c.id}
                 onClick={() => setSelectedCategorySlug(c.slug)}
-                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all shrink-0 ${
+                className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all shrink-0 flex items-center gap-1.5 ${
                   isSelected
                     ? 'bg-white text-[#523D0C] shadow-lg'
                     : 'bg-[#523B08] text-white/80 hover:text-white border border-white/20'
                 }`}
               >
+                <Icon className="w-3.5 h-3.5" />
                 {language === 'km' && c.nameKhmer ? c.nameKhmer : c.name} ({count})
               </button>
             );
@@ -434,6 +450,10 @@ export const ShopPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product, index) => {
               const priceKhr = product.price * settings.exchangeRateKhr;
+              const discountPct = product.originalPrice && product.originalPrice > product.price
+                ? Math.round((1 - product.price / product.originalPrice) * 100)
+                : 0;
+              const isNew = new Date(product.createdAt).getTime() > Date.now() - 60 * 24 * 60 * 60 * 1000;
 
               return (
                 <motion.div
@@ -470,8 +490,18 @@ export const ShopPage: React.FC = () => {
                       </span>
                     </div>
 
-                    {/* Stock Status Badge */}
-                    <div className="absolute top-3 right-3">
+                    {/* Promo & Stock Status Badges */}
+                    <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+                      {isNew && (
+                        <span className="bg-emerald-300 text-[#2C1D02] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                          NEW
+                        </span>
+                      )}
+                      {discountPct > 0 && (
+                        <span className="bg-white text-[#523D0C] text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded shadow">
+                          -{discountPct}%
+                        </span>
+                      )}
                       {product.availability === 'limited' ? (
                         <span className="bg-[#382704] text-white text-[9px] font-bold px-2 py-0.5 rounded border border-white/30 shadow">
                           Limited

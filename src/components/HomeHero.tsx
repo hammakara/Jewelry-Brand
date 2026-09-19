@@ -1,15 +1,32 @@
 import React from 'react';
 import { useStore } from '../context/StoreContext';
-import { Sparkles, ArrowRight, ShieldCheck, Award, Eye, BookOpen } from 'lucide-react';
+import { Sparkles, ArrowRight, ShieldCheck, Award, Eye, BookOpen, ChevronDown } from 'lucide-react';
 
 export const HomeHero: React.FC = () => {
   const { setCurrentPage, setIsPearlGuideOpen, language } = useStore();
 
   return (
     <section className="relative bg-gradient-to-b from-[#876516] via-[#73530F] to-[#5C420A] text-white overflow-hidden border-b border-white/20">
+      {/* Background texture image */}
+      <img
+        src="https://images.unsplash.com/photo-1599643477877-530eb83abc8e?auto=format&fit=crop&w=1800&q=85"
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-luminosity"
+      />
+      {/* Warm overlay to keep luxury gold tone & text legible */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#876516]/75 via-[#73530F]/70 to-[#5C420A]/90"></div>
+
       {/* Subtle Background Radial Pearl Glow */}
       <div className="absolute inset-0 pointer-events-none opacity-30 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-white/40 via-transparent to-transparent"></div>
+
+      {/* Floating Pearl Ornaments */}
+      <div className="absolute top-16 right-[8%] w-24 h-24 sm:w-32 sm:h-32 rounded-full pearl-shimmer opacity-40 blur-[1px] animate-pearl-float pointer-events-none hidden sm:block"></div>
+      <div className="absolute bottom-24 left-[6%] w-16 h-16 sm:w-24 sm:h-24 rounded-full pearl-shimmer opacity-25 blur-[1px] animate-pearl-float-delay pointer-events-none hidden sm:block"></div>
       
+      {/* Shine sweep accent */}
+      <div className="absolute top-0 bottom-0 w-40 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shine pointer-events-none"></div>
+
       {/* Decorative framing lines */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full border-x border-white/10 pointer-events-none"></div>
 
@@ -27,7 +44,7 @@ export const HomeHero: React.FC = () => {
           {/* Main Headline */}
           <div className="space-y-3">
             <h1 className="font-display-luxury text-3xl sm:text-5xl lg:text-6xl font-bold tracking-[0.18em] text-white uppercase leading-tight sm:leading-none drop-shadow-sm">
-              ELEGANCE IN EVERY PEARL
+              ELEGANCE IN <span className="text-gold">EVERY PEARL</span>
             </h1>
             <p className="font-serif-luxury text-xl sm:text-2xl text-white/95 italic font-light max-w-xl mx-auto">
               {language === 'en'
@@ -78,6 +95,16 @@ export const HomeHero: React.FC = () => {
             <div className="space-y-1">
               <div className="font-display-luxury text-lg sm:text-2xl font-bold text-white">1-ON-1</div>
               <div className="text-[10px] sm:text-xs text-white/80 uppercase tracking-wider font-medium">Concierge Care</div>
+            </div>
+          </div>
+
+          {/* Scroll Cue */}
+          <div className="pt-4 flex justify-center">
+            <div className="flex flex-col items-center gap-1 text-white/70 animate-bounce">
+              <span className="text-[9px] uppercase tracking-[0.35em] font-semibold">
+                {language === 'en' ? 'Scroll' : 'រមូរ'}
+              </span>
+              <ChevronDown className="w-4 h-4" />
             </div>
           </div>
 

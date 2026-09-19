@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useStore } from '../context/StoreContext';
 import { 
   Sparkles, 
@@ -12,7 +12,9 @@ import {
   User,
   LogOut,
   UserCheck,
-  KeyRound
+  KeyRound,
+  ChevronDown,
+  Gem
 } from 'lucide-react';
 import { PageView } from '../types';
 
@@ -28,11 +30,22 @@ export const Navbar: React.FC = () => {
     openAuthModal,
     logout,
     openChangePasswordModal,
-    orders
+    orders,
+    categories,
+    products
   } = useStore();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const pendingOrdersCount = orders.filter(o => o.status === 'PENDING').length;
 
@@ -45,7 +58,7 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#63490D]/95 backdrop-blur-md border-b border-white/20 text-white shadow-lg">
+    <header className={`sticky top-0 z-40 w-full bg-[#63490D]/95 backdrop-blur-md border-b border-white/20 text-white shadow-lg transition-shadow duration-300 ${scrolled ? 'shadow-[0_10px_30px_rgba(0,0,0,0.5)]' : ''}`}>
       {/* Top Announcement Bar */}
       <div className="bg-[#4E3707] border-b border-white/15 py-1.5 px-4 text-xs font-light tracking-wider text-center text-white flex items-center justify-between">
         <div className="hidden md:flex items-center gap-4 text-white/80">
@@ -216,19 +229,66 @@ export const Navbar: React.FC = () => {
               )}
             </button>
 
-            <button
-              onClick={() => navigate('shop')}
-              className={`transition-all relative py-1 ${
-                currentPage === 'shop' 
-                  ? 'text-white' 
-                  : 'text-white/75 hover:text-white'
-              }`}
+            <div
+              className="relative"
+              onMouseEnter={() => setShopMenuOpen(true)}
+              onMouseLeave={() => setShopMenuOpen(false)}
             >
-              {language === 'en' ? 'Shop' : 'ទំនិញទាំងអស់'}
-              {currentPage === 'shop' && (
-                <span className="absolute bottom-0 left-0 w-full h-[2px] bg-white rounded-full"></span>
+              <button
+                onClick={() => navigate('shop')}
+                className={`transition-all relative py-1 flex items-center gap-1 ${
+                  (currentPage === 'shop' || shopMenuOpen) 
+                    ? 'text-white' 
+                    : 'text-white/75 hover:text-white'
+                }`}
+              >
+                {language === 'en' ? 'Shop' : 'ទំនិញទាំងអស់'}
+                <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${shopMenuOpen ? 'rotate-180' : ''}`} />
+                {currentPage === 'shop' && !shopMenuOpen && (
+                  <span className="absolute bottom-0 left-0 w-full h-[2px] bg-white rounded-full"></span>
+                )}
+              </button>
+
+              {/* Shop Categories Mega Menu */}
+              {shopMenuOpen && (
+                <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 w-80 bg-[#4E3707] border border-white/25 rounded-2xl shadow-2xl p-3 z-50">
+                  <div className="flex items-center gap-2 px-2 pt-1 pb-2 text-[10px] uppercase tracking-widest font-bold text-white/80 border-b border-white/15 mb-2">
+                    <Gem className="w-3.5 h-3.5 text-white" />
+                    <span>
+                      {language === 'en' ? 'Browse by Category' : 'ជ្រើសរើសតាមប្រភេទ'}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 gap-1">
+                    {categories.map((c) => {
+                      const count = products.filter(p => p.categoryId === c.id).length;
+                      return (
+                        <button
+                          key={c.id}
+                          onClick={() => navigate('shop', c.slug)}
+                          className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-white/85 hover:bg-white/15 hover:text-white transition-colors text-left group"
+                        >
+                          <span className="font-semibold">
+                            {language === 'km' && c.nameKhmer ? c.nameKhmer : c.name}
+                          </span>
+                          <span className="text-[10px] bg-white/10 border border-white/15 px-1.5 py-0.5 rounded-full text-white/70 group-hover:text-white">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() => navigate('collections')}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg text-xs text-white/85 hover:bg-white/15 hover:text-white transition-colors text-left mt-1 border-t border-white/15 pt-2"
+                    >
+                      <span className="font-bold text-white">
+                        {language === 'en' ? 'Curated Signature Suites' : 'កម្រងគ្រឿងអលង្ការប្រណីត'}
+                      </span>
+                      <span>&rarr;</span>
+                    </button>
+                  </div>
+                </div>
               )}
-            </button>
+            </div>
 
             <button
               onClick={() => navigate('collections')}
@@ -373,6 +433,24 @@ export const Navbar: React.FC = () => {
               <Clock className="w-4 h-4 text-white" />
               {language === 'en' ? 'Track Order Request' : 'តាមដានការកុម្ម៉ង់'}
             </button>
+          </div>
+
+          <div className="pt-2">
+            <div className="text-[10px] uppercase tracking-widest font-bold text-white/70 mb-2 flex items-center gap-1.5">
+              <Gem className="w-3 h-3 text-white" />
+              <span>{language === 'en' ? 'Shop by Category' : 'ប្រភេទទំនិញ'}</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {categories.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => navigate('shop', c.slug)}
+                  className="px-2.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-[11px] font-semibold rounded-lg transition-colors"
+                >
+                  {language === 'km' && c.nameKhmer ? c.nameKhmer : c.name}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="pt-2 flex flex-col gap-3">

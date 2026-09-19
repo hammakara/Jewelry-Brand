@@ -44,9 +44,16 @@ export const BestSellers: React.FC = () => {
         </motion.div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-6 scrollbar-none snap-x snap-mandatory sm:snap-none">
           {featuredList.map((product, index) => {
             const priceKhr = product.price * settings.exchangeRateKhr;
+            const discountPct = product.originalPrice && product.originalPrice > product.price
+              ? Math.round((1 - product.price / product.originalPrice) * 100)
+              : 0;
+            const savings = product.originalPrice && product.originalPrice > product.price
+              ? product.originalPrice - product.price
+              : 0;
+            const isNew = new Date(product.createdAt).getTime() > Date.now() - 60 * 24 * 60 * 60 * 1000;
 
             return (
               <motion.div
@@ -59,7 +66,7 @@ export const BestSellers: React.FC = () => {
                   delay: (index % 4) * 0.1, 
                   ease: [0.22, 1, 0.36, 1] 
                 }}
-                className="group bg-[#4D3708] rounded-xl overflow-hidden border border-white/20 hover:border-white transition-all duration-300 shadow-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.2)] flex flex-col justify-between"
+                className="group bg-[#4D3708] rounded-xl overflow-hidden border border-white/20 hover:border-white transition-all duration-300 shadow-lg hover:shadow-[0_8px_30px_rgba(255,255,255,0.2)] flex flex-col justify-between snap-start min-w-[260px] sm:min-w-0"
               >
                 {/* Image & Badges */}
                 <div className="relative aspect-square overflow-hidden bg-[#382704] cursor-pointer" onClick={() => viewProductDetails(product.id)}>
@@ -79,6 +86,20 @@ export const BestSellers: React.FC = () => {
                     <span className="bg-[#382704]/90 text-white text-[10px] font-medium px-2 py-0.5 rounded border border-white/25 shadow">
                       {product.pearlType} Pearl
                     </span>
+                  </div>
+
+                  {/* Promo Badges */}
+                  <div className="absolute top-3 right-3 flex flex-col gap-1.5 items-end">
+                    {isNew && (
+                      <span className="bg-emerald-300 text-[#2C1D02] text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded shadow">
+                        NEW
+                      </span>
+                    )}
+                    {discountPct > 0 && (
+                      <span className="bg-white text-[#523D0C] text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded shadow">
+                        -{discountPct}%
+                      </span>
+                    )}
                   </div>
 
                   {/* Quick Action Overlay */}
@@ -142,6 +163,9 @@ export const BestSellers: React.FC = () => {
                       </div>
                       <div className="text-[10px] text-white/75">
                         ~{priceKhr.toLocaleString()} KHR
+                        {savings > 0 && (
+                          <span className="text-emerald-300 font-bold ml-1.5">Save ${savings}</span>
+                        )}
                       </div>
                     </div>
 

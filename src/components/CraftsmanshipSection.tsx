@@ -38,7 +38,9 @@ export const CraftsmanshipSection: React.FC = () => {
                   {language === 'en' ? 'Natural Lustre & Iridescence' : 'ពន្លឺចែងចាំងធម្មជាតិ'}
                 </h4>
                 <p className="text-[11px] text-white/75 mt-1">
-                  High refraction index giving pearls their signature radiant glow.
+                  {language === 'en'
+                    ? 'High refraction index giving pearls their signature radiant glow.'
+                    : 'សន្ទស្សន៍ចាំងពន្លឺខ្ពស់ ផ្តល់នូវភាពរលោងដូចកញ្ចក់ដ៏វិសេស។'}
                 </p>
               </div>
 
@@ -48,9 +50,28 @@ export const CraftsmanshipSection: React.FC = () => {
                   {language === 'en' ? 'Solid 18K Gold & 925 Silver' : 'មាសសុទ្ធ 18K & ប្រាក់ ៩២៥'}
                 </h4>
                 <p className="text-[11px] text-white/75 mt-1">
-                  Hypoallergenic precious metals ensuring lifelong wear and value.
+                  {language === 'en'
+                    ? 'Hypoallergenic precious metals ensuring lifelong wear and value.'
+                    : 'លោហៈដ៏ថ្លៃថ្នូរ មិនបង្កអាលែកហ្ស៊ី ទ្រទ្រង់ការប្រើប្រាស់យូរអង្វែង។'}
                 </p>
               </div>
+            </div>
+
+            {/* Quality Capsules */}
+            <div className="flex flex-wrap gap-2 pt-1">
+              {[
+                language === 'en' ? 'Top 1% of Harvest' : 'ជ្រើសរើសតែ ១% កំពូល',
+                language === 'en' ? 'AAAA Gem Grade Lustre' : 'ពន្លឺកម្រិត AAAA',
+                language === 'en' ? 'GIA Standards' : 'ស្តង់ដារ GIA',
+                language === 'en' ? 'Hanadama Equivalent' : 'សមមូល Hanadama',
+              ].map((label) => (
+                <span
+                  key={label}
+                  className="px-3 py-1.5 bg-white/10 border border-white/25 text-white text-[10px] font-bold uppercase tracking-wider rounded-full"
+                >
+                  {label}
+                </span>
+              ))}
             </div>
 
             <div className="pt-2">
@@ -80,8 +101,14 @@ export const CraftsmanshipSection: React.FC = () => {
                 <Sparkles className="w-5 h-5 text-[#523D0C]" />
               </span>
               <div>
-                <div className="text-xs font-bold text-white">GIA Standards Applied</div>
-                <div className="text-[10px] text-white/75">Every piece inspected by qualified gemologists</div>
+                <div className="text-xs font-bold text-white">
+                  {language === 'en' ? 'GIA Standards Applied' : 'ស្តង់ដារ GIA'}
+                </div>
+                <div className="text-[10px] text-white/75">
+                  {language === 'en'
+                    ? 'Every piece inspected by qualified gemologists'
+                    : 'រាល់ម៉ូដត្រូវបានពិនិត្យដោយអ្នកជំនាញត្បូង'}
+                </div>
               </div>
             </div>
           </div>

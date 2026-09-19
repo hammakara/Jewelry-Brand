@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useStore } from '../context/StoreContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -11,6 +11,18 @@ export const FeaturedCollections: React.FC = () => {
     setCurrentPage('shop');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const categoryItems = useMemo(() => {
+    const map: Record<string, { count: number; minPrice: number | null }> = {};
+    categories.forEach((c) => {
+      const list = products.filter((p) => p.categoryId === c.id);
+      map[c.id] = {
+        count: list.length,
+        minPrice: list.length ? Math.min(...list.map((p) => p.price)) : null,
+      };
+    });
+    return map;
+  }, [categories, products]);
 
   return (
     <section className="py-20 bg-[#705210] border-b border-white/20 relative">
@@ -41,7 +53,7 @@ export const FeaturedCollections: React.FC = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {categories.map((category, index) => {
-            const count = products.filter(p => p.categoryId === category.id).length;
+            const item = categoryItems[category.id] || { count: 0, minPrice: null };
 
             return (
               <motion.div
@@ -66,10 +78,25 @@ export const FeaturedCollections: React.FC = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#2E1F03]/90 via-[#2E1F03]/30 to-transparent"></div>
                   
-                  <div className="absolute bottom-4 left-4 right-4 text-white">
-                    <span className="text-[11px] uppercase tracking-widest text-white/90 font-bold bg-[#63490D]/80 px-2 py-0.5 rounded border border-white/20">
-                      {count} {language === 'en' ? 'Pieces' : 'ម៉ូដ'}
+                  {/* Hover Explore Overlay */}
+                  <div className="absolute inset-0 bg-[#523D0C]/0 group-hover:bg-[#523D0C]/35 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#523D0C] text-xs font-bold uppercase tracking-widest rounded shadow-xl">
+                      {language === 'en' ? 'Explore' : 'ទស្សនា'}
+                      <ArrowRight className="w-3.5 h-3.5" />
                     </span>
+                  </div>
+
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] uppercase tracking-widest text-white/90 font-bold bg-[#63490D]/80 px-2 py-0.5 rounded border border-white/20">
+                        {item.count} {language === 'en' ? 'Pieces' : 'ម៉ូដ'}
+                      </span>
+                      {item.minPrice != null && (
+                        <span className="text-[11px] uppercase tracking-widest text-white font-bold bg-[#382704]/90 px-2 py-0.5 rounded border border-white/25">
+                          From ${item.minPrice}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="font-serif-luxury text-2xl font-bold mt-1.5 text-white">
                       {language === 'km' && category.nameKhmer ? category.nameKhmer : category.name}
                     </h3>

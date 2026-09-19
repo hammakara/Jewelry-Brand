@@ -11,7 +11,9 @@ import {
   Truck, 
   HeartHandshake,
   ArrowUpRight,
-  Clock
+  Clock,
+  Instagram,
+  Facebook
 } from 'lucide-react';
 import { PageView } from '../types';
 
@@ -236,8 +238,46 @@ export const Footer: React.FC = () => {
             <span>&copy; {new Date().getFullYear()} ប្រណិត (PRANITH) Luxury Pearl Boutique. All Rights Reserved.</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-[11px] text-white/70">Boutique Haute Joaillerie</span>
+
+            {(settings.instagramUrl || settings.facebookUrl) && (
+              <span className="text-white/40">•</span>
+            )}
+
+            {settings.instagramUrl && (
+              <a
+                href={settings.instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Instagram"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <Instagram className="w-4 h-4" />
+              </a>
+            )}
+
+            {settings.facebookUrl && (
+              <a
+                href={settings.facebookUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Facebook"
+                className="text-white/70 hover:text-white transition-colors"
+              >
+                <Facebook className="w-4 h-4" />
+              </a>
+            )}
+
+            <a
+              href={settings.telegramGroupLink}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Telegram"
+              className="text-white/70 hover:text-white transition-colors"
+            >
+              <Send className="w-4 h-4" />
+            </a>
           </div>
         </div>
       </div>
