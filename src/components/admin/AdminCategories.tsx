@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { Plus, Edit2, Trash2, X, Layers, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Layers, Image as ImageIcon, UploadCloud, Loader2 } from 'lucide-react';
 import { Category } from '../../types';
 
+const DEFAULT_CATEGORY_IMAGE = 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80';
+const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+
 export const AdminCategories: React.FC = () => {
-  const { categories, products, addCategory, updateCategory, deleteCategory, language } = useStore();
+  const { categories, products, addCategory, updateCategory, deleteCategory, language, authToken } = useStore();
   const numberFormatter = new Intl.NumberFormat(language === 'en' ? 'en-US' : 'km-KH');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -23,47 +31,105 @@ export const AdminCategories: React.FC = () => {
     slug: '',
     description: '',
     descriptionKhmer: '',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+    image: DEFAULT_CATEGORY_IMAGE,
   });
 
   const openAdd = () => {
     setEditingCategory(null);
+    setUploadError('');
     setFormData({
       name: '',
       nameKhmer: '',
       slug: '',
       description: '',
       descriptionKhmer: '',
-      image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80',
+      image: DEFAULT_CATEGORY_IMAGE,
     });
     setIsModalOpen(true);
   };
 
   const openEdit = (cat: Category) => {
     setEditingCategory(cat);
+    setUploadError('');
     setFormData({
       name: cat.name,
       nameKhmer: cat.nameKhmer || '',
       slug: cat.slug,
       description: cat.description,
       descriptionKhmer: cat.descriptionKhmer || '',
-      image: cat.image,
+      image: cat.image || DEFAULT_CATEGORY_IMAGE,
     });
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      setUploadError(language === 'en' ? 'Please select a JPG, PNG, or WEBP image.' : 'សូមជ្រើសរើសរូបភាព JPG, PNG ឬ WEBP។');
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE) {
+      setUploadError(language === 'en' ? 'Image must be under 8 MB.' : 'ទំហំរូបភាពមិនអាចលើស ៨ MB ទេ។');
+      return;
+    }
+
+    setUploadError('');
+    setIsUploading(true);
+
+    try {
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('FILE_READ_FAILED'));
+        reader.readAsDataURL(file);
+      });
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+        },
+        body: JSON.stringify({ dataUrl, fileName: file.name }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || typeof data.url !== 'string' || !data.url) {
+        throw new Error(`UPLOAD_FAILED_${res.status}`);
+      }
+
+      setFormData((prev) => ({ ...prev, image: data.url }));
+    } catch (err) {
+      console.error('Category image upload error:', err);
+      setUploadError(language === 'en'
+        ? 'Unable to upload the image. Check your connection and Cloudinary configuration.'
+        : 'មិនអាចទាញយករូបភាពបានទេ។ សូមពិនិត្យការតភ្ជាប់ និងការកំណត់ Cloudinary។');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name.trim()) return;
+    if (!formData.name.trim() || isUploading || isSaving) return;
 
     const slug = formData.slug.trim() || formData.name.toLowerCase().replace(/\s+/g, '-');
+    setIsSaving(true);
 
-    if (editingCategory) {
-      updateCategory(editingCategory.id, { ...formData, slug });
-    } else {
-      addCategory({ ...formData, slug });
+    try {
+      if (editingCategory) {
+        await updateCategory(editingCategory.id, { ...formData, slug });
+      } else {
+        await addCategory({ ...formData, slug });
+      }
+      setIsModalOpen(false);
+    } finally {
+      setIsSaving(false);
     }
-    setIsModalOpen(false);
   };
 
   return (
@@ -100,7 +166,7 @@ export const AdminCategories: React.FC = () => {
             >
               <div className="relative h-44 bg-[#352504] overflow-hidden">
                 <img
-                  src={cat.image}
+                  src={cat.image || DEFAULT_CATEGORY_IMAGE}
                   alt={language === 'km' && cat.nameKhmer ? cat.nameKhmer : cat.name}
                   className="w-full h-full object-cover opacity-85"
                 />
@@ -218,17 +284,80 @@ export const AdminCategories: React.FC = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-3">
                 <label className="block text-xs font-bold text-white mb-1">
-                  {language === 'en' ? 'Cover Photo Image URL' : 'URL រូបភាពបិទបាំង'}
+                  {language === 'en' ? 'Category Cover Image' : 'រូបភាពបិទបាំងប្រភេទ'}
                 </label>
+
+                <div className="relative h-40 overflow-hidden rounded-xl border border-white/25 bg-[#3D2B05]">
+                  {formData.image ? (
+                    <img
+                      src={formData.image}
+                      alt={language === 'en' ? 'Category cover preview' : 'មើលជាមុនរូបភាពបិទបាំងប្រភេទ'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-white/60">
+                      <ImageIcon className="w-8 h-8" />
+                      <span className="text-xs">{language === 'en' ? 'No image selected' : 'មិនទាន់ជ្រើសរើសរូបភាព'}</span>
+                    </div>
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/65 flex items-center justify-center gap-2 text-xs font-bold text-white">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      {language === 'en' ? 'Uploading...' : 'កំពុងទាញយក...'}
+                    </div>
+                  )}
+                </div>
+
                 <input
                   type="url"
                   required
                   value={formData.image}
-                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  onChange={(e) => {
+                    setUploadError('');
+                    setFormData({ ...formData, image: e.target.value });
+                  }}
+                  placeholder={language === 'en' ? 'https://...' : 'https://...'}
                   className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none"
                 />
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading || isSaving}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[#3D2B05] hover:bg-white hover:text-[#523D0C] text-white text-xs font-bold rounded-lg border border-white/20 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        {language === 'en' ? 'Uploading...' : 'កំពុងទាញយក...'}
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4" />
+                        {language === 'en' ? 'Upload Image from Device' : 'ទាញយករូបភាពពីឧបករណ៍'}
+                      </>
+                    )}
+                  </button>
+                  <span className="text-[10px] text-white/60">
+                    {language === 'en' ? 'JPG / PNG / WEBP up to 8 MB. Stored securely on Cloudinary.' : 'ឯកសារ JPG / PNG / WEBP ទំហំរហូតដល់ ៨ MB។ រក្សាទុកដោយសុវត្ថិភាពលើ Cloudinary។'}
+                  </span>
+                </div>
+
+                {uploadError && (
+                  <div className="text-[11px] text-rose-300 font-medium bg-rose-950/40 border border-rose-400/40 rounded-lg px-3 py-2">
+                    {uploadError}
+                  </div>
+                )}
               </div>
 
               <div>
@@ -253,11 +382,14 @@ export const AdminCategories: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase rounded-lg shadow-md transition-colors"
+                  disabled={isUploading || isSaving}
+                  className="px-5 py-2 bg-white hover:bg-neutral-100 text-[#523D0C] text-xs font-bold uppercase rounded-lg shadow-md transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {editingCategory
-                    ? (language === 'en' ? 'Update' : 'ធ្វើបច្ចុប្បន្នភាព')
-                    : (language === 'en' ? 'Create' : 'បង្កើត')}
+                  {isSaving
+                    ? (language === 'en' ? 'Saving...' : 'កំពុងរក្សាទុក...')
+                    : editingCategory
+                      ? (language === 'en' ? 'Update' : 'ធ្វើបច្ចុប្បន្នភាព')
+                      : (language === 'en' ? 'Create' : 'បង្កើត')}
                 </button>
               </div>
             </form>

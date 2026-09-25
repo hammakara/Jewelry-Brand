@@ -3,9 +3,13 @@ import express from 'express';
 import { initPrismaDatabase } from './lib/seed';
 import { corsMiddleware } from './middleware/cors';
 import apiRouter from './routes';
+import { CLOUDINARY_MAX_IMAGE_MB } from './config';
 
 export const app = express();
+const uploadJsonLimit = `${Math.ceil(CLOUDINARY_MAX_IMAGE_MB * 4 / 3) + 1}mb`;
 
+app.use('/api/upload', express.json({ limit: uploadJsonLimit }));
+app.use('/upload', express.json({ limit: uploadJsonLimit }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(corsMiddleware);
