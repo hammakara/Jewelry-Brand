@@ -40,8 +40,13 @@ const STATUS_META: Record<string, { en: string; km: string }> = {
   settings: { en: 'Store Settings', km: 'ការកំណត់ហាង' },
 };
 
+const ROLE_LABELS = {
+  ADMIN: { en: 'Administrator', km: 'អ្នកគ្រប់គ្រង' },
+  CUSTOMER: { en: 'Customer', km: 'អតិថិជន' },
+} as const;
+
 export const AdminLayout: React.FC = () => {
-  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser, openChangePasswordModal, language, isDbConnected } = useStore();
+  const { isAdminLoggedIn, logoutAdmin, setCurrentPage, orders, currentUser, openChangePasswordModal, language, setLanguage, isDbConnected } = useStore();
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -72,8 +77,36 @@ export const AdminLayout: React.FC = () => {
     { id: 'settings', label: language === 'en' ? 'Store Settings' : 'ការកំណត់ហាង', icon: Settings },
   ];
 
-  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  const dateString = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  const locale = language === 'en' ? 'en-US' : 'km-KH';
+  const numberFormatter = new Intl.NumberFormat(locale);
+  const timeString = now.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: language === 'en' });
+  const dateString = now.toLocaleDateString(locale, { weekday: 'short', month: 'short', day: 'numeric' });
+
+  const renderLanguageSwitcher = () => (
+    <div
+      className="flex items-center gap-1 bg-[#3D2B05] rounded-lg p-1 border border-white/20 text-[10px]"
+      aria-label={language === 'en' ? 'Language selection' : 'ការជ្រើសរើសភាសា'}
+    >
+      <button
+        type="button"
+        onClick={() => setLanguage('en')}
+        className={`px-2 py-1 rounded transition-all ${
+          language === 'en' ? 'bg-white text-[#523D0C] font-bold shadow-sm' : 'text-white/70 hover:text-white'
+        }`}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        onClick={() => setLanguage('km')}
+        className={`px-2 py-1 rounded transition-all ${
+          language === 'km' ? 'bg-white text-[#523D0C] font-bold shadow-sm' : 'text-white/70 hover:text-white'
+        }`}
+      >
+        ខ្មែរ
+      </button>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#7B5B12] text-white flex flex-col md:flex-row relative">
@@ -91,6 +124,7 @@ export const AdminLayout: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          {renderLanguageSwitcher()}
           <span className={`flex items-center gap-1 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider ${
             isDbConnected ? 'bg-emerald-900/60 text-emerald-200 border border-emerald-400/40' : 'bg-amber-900/60 text-amber-200 border border-amber-400/40'
           }`}>
@@ -225,7 +259,7 @@ export const AdminLayout: React.FC = () => {
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-[11px] font-bold text-white truncate">{currentUser.name}</div>
-                    <div className="text-[9px] text-amber-300 font-semibold uppercase">{currentUser.role}</div>
+                    <div className="text-[9px] text-amber-300 font-semibold uppercase">{ROLE_LABELS[currentUser.role][language]}</div>
                   </div>
                 </div>
 
@@ -267,7 +301,7 @@ export const AdminLayout: React.FC = () => {
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-white/60 font-bold">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>ប្រណិត (PRANITH) — Concierge Suite</span>
+              <span>{language === 'en' ? 'ប្រណិត (PRANITH) — Concierge Suite' : 'ប្រណិត (PRANITH) — ផ្នែកសេវាកម្ម'}</span>
               <ChevronRight className="w-3 h-3" />
               <span className="text-amber-300">{STATUS_META[activeTab]?.[language] || ''}</span>
             </div>
@@ -277,6 +311,8 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
+            {renderLanguageSwitcher()}
+
             <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#3D2B05] border border-white/15 shadow-inner">
               <Clock className="w-4 h-4 text-amber-300" />
               <div className="leading-tight">
@@ -301,10 +337,10 @@ export const AdminLayout: React.FC = () => {
               <Database className="w-4 h-4 text-amber-200" />
               <div className="leading-tight">
                 <div className="text-[11px] font-bold text-white">
-                  <span className="text-amber-300 font-mono">${totalRevenue.toLocaleString()}</span>
+                  <span className="text-amber-300 font-mono">${numberFormatter.format(totalRevenue)}</span>
                 </div>
                 <div className="text-[9px] text-white/70 uppercase tracking-wider font-semibold">
-                  {language === 'en' ? `${completedOrderCount} completed` : `${completedOrderCount} បានបញ្ចប់`}
+                  {language === 'en' ? `${numberFormatter.format(completedOrderCount)} completed` : `${numberFormatter.format(completedOrderCount)} បានបញ្ចប់`}
                 </div>
               </div>
             </div>

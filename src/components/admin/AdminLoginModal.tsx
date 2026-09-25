@@ -3,7 +3,7 @@ import { useStore } from '../../context/StoreContext';
 import { ShieldCheck, Mail, Lock, ArrowLeft, Eye, EyeOff, AlertCircle } from 'lucide-react';
 
 export const AdminLoginModal: React.FC = () => {
-  const { login, setCurrentPage, language } = useStore();
+  const { login, setCurrentPage, language, setLanguage } = useStore();
   const [email, setEmail] = useState('admin@pranith.luxury');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,30 @@ export const AdminLoginModal: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center px-4 py-12">
-      <div className="w-full max-w-md bg-stone-900 border border-amber-500/30 rounded-2xl shadow-2xl p-8 space-y-6">
+      <div className="relative w-full max-w-md bg-stone-900 border border-amber-500/30 rounded-2xl shadow-2xl p-8 space-y-6">
+        <div
+          className="absolute top-4 right-4 flex items-center gap-1 bg-stone-950 rounded-lg p-1 border border-stone-700 text-[10px]"
+          aria-label={language === 'en' ? 'Language selection' : 'ការជ្រើសរើសភាសា'}
+        >
+          <button
+            type="button"
+            onClick={() => setLanguage('en')}
+            className={`px-2 py-1 rounded transition-all ${
+              language === 'en' ? 'bg-white text-stone-950 font-bold' : 'text-stone-400 hover:text-white'
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => setLanguage('km')}
+            className={`px-2 py-1 rounded transition-all ${
+              language === 'km' ? 'bg-white text-stone-950 font-bold' : 'text-stone-400 hover:text-white'
+            }`}
+          >
+            ខ្មែរ
+          </button>
+        </div>
         
         {/* Top Header */}
         <div className="text-center space-y-2">
@@ -33,7 +56,7 @@ export const AdminLoginModal: React.FC = () => {
             <ShieldCheck className="w-7 h-7" />
           </div>
           <div className="font-display-luxury text-2xl font-bold tracking-widest text-amber-100">
-            ប្រណិត ADMIN SUITE
+            {language === 'en' ? 'ប្រណិត ADMIN SUITE' : 'ប្រណិត — ផ្នែកអ្នកគ្រប់គ្រង'}
           </div>
           <p className="text-xs text-stone-400">
             {language === 'en' ? 'Secure Role-Based Authentication with Neon PostgreSQL & JWT.' : 'ការផ្ទៀងផ្ទាត់អត្តសញ្ញាណសុវត្ថិភាពតាមតួនាទី ជាមួយ Neon PostgreSQL និង JWT។'}

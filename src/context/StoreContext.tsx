@@ -8,6 +8,14 @@ interface Toast {
   type: 'success' | 'info' | 'gold';
 }
 
+const ORDER_STATUS_LABELS: Record<OrderStatus, { en: string; km: string }> = {
+  PENDING: { en: 'PENDING', km: 'កំពុងរង់ចាំ' },
+  CONTACTED: { en: 'CONTACTED', km: 'បានទាក់ទង' },
+  CONFIRMED: { en: 'CONFIRMED', km: 'បានបញ្ជាក់' },
+  COMPLETED: { en: 'COMPLETED', km: 'បានបញ្ចប់' },
+  CANCELLED: { en: 'CANCELLED', km: 'បានលុបចោល' },
+};
+
 interface StoreContextType {
   // Navigation & View
   currentPage: PageView;
@@ -114,7 +122,20 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentPage, setCurrentPage] = useState<PageView>('home');
   const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
   const [selectedCategorySlug, setSelectedCategorySlug] = useState<string | null>(null);
-  const [language, setLanguage] = useState<Language>('en');
+  const [language, setLanguage] = useState<Language>(() => {
+    const savedLanguage = localStorage.getItem('mdp_language');
+    return savedLanguage === 'km' ? 'km' : 'en';
+  });
+
+  const t = (en: string, km: string) => language === 'en' ? en : km;
+  const getLocalizedName = (item: { name: string; nameKhmer?: string }) => (
+    language === 'km' && item.nameKhmer ? item.nameKhmer : item.name
+  );
+
+  useEffect(() => {
+    localStorage.setItem('mdp_language', language);
+    document.documentElement.lang = language;
+  }, [language]);
 
   // Modals
   const [isOrderModalOpen, setIsOrderModalOpen] = useState<boolean>(false);
@@ -251,10 +272,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       try {
         return JSON.parse(text);
       } catch {
-        return { error: `Server error (${res.status}): Please try again.` };
+        return { error: t(`Server error (${res.status}): Please try again.`, `កំហុសម៉ាស៊ីនមេ (${res.status})៖ សូមព្យាយាមម្តងទៀត។`) };
       }
-    } catch (err: any) {
-      return { error: err?.message || 'Network communication error.' };
+    } catch {
+      return { error: t('Network communication error.', 'មានបញ្ហាក្នុងការទទួលបណ្តាញចាទួនដោយម៉ាស៊ីនមេ។') };
     }
   };
 
@@ -435,11 +456,19 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data?.error || 'Authentication failed. Please verify your credentials.' };
+        return {
+          success: false,
+          error: language === 'en'
+            ? data?.error || 'Authentication failed. Please verify your credentials.'
+            : 'ការផ្ទៀងផ្ទាត់មិនបានសម្រេច។ សូមពិនិត្យព័ត៌មានចូលរបស់អ្នក។',
+        };
       }
 
       if (!data?.token || !data?.user) {
-        return { success: false, error: data?.error || 'Invalid server authentication response.' };
+        return {
+          success: false,
+          error: t('Invalid server authentication response.', 'មានបញ្ហាជាមួយការឆ្លើយតបផ្ទក្រង់ពីម៉ាស៊ីនមេមួយ។'),
+        };
       }
 
       setAuthToken(data.token);
@@ -447,7 +476,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       localStorage.setItem('mdp_jwt_token', data.token);
       localStorage.setItem('mdp_auth_user', JSON.stringify(data.user));
 
-      showToast(`Welcome back, ${data.user.name}!`, 'gold');
+      showToast(t(`Welcome back, ${data.user.name}!`, `សូមស្វាគមន៍, ${data.user.name}!`), 'gold');
       closeAuthModal();
 
       // Refresh orders for authenticated user
@@ -466,9 +495,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login error:', err);
-      return { success: false, error: err.message || 'Connection error' };
+      return { success: false, error: t('Connection error. Please try again.', 'មិនអាចភ្ជាប់ម៉ាស៊ីនមេបានទេ។ សូមព្យាយាមម្តងទៀត។') };
     }
   };
 
@@ -488,11 +517,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data?.error || 'Registration failed. Please try again.' };
+        return {
+          success: false,
+          error: language === 'en'
+            ? data?.error || 'Registration failed. Please try again.'
+            : 'ការចុះឈ្មោះមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។',
+        };
       }
 
       if (!data?.token || !data?.user) {
-        return { success: false, error: data?.error || 'Registration response invalid.' };
+        return { success: false, error: t('Invalid registration response.', 'ការឆ្លើយតបនៃការចុះឈ្មោះមិនត្រឹមត្រូវ។') };
       }
 
       setAuthToken(data.token);
@@ -500,12 +534,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       localStorage.setItem('mdp_jwt_token', data.token);
       localStorage.setItem('mdp_auth_user', JSON.stringify(data.user));
 
-      showToast(`Account created! Welcome, ${data.user.name}.`, 'gold');
+      showToast(t(`Account created! Welcome, ${data.user.name}.`, `គណនីត្រូវបានបង្កើតដោយជោគជ័យ! សូមស្វាគមន៍, ${data.user.name}។`), 'gold');
       closeAuthModal();
       return { success: true };
-    } catch (err: any) {
+    } catch (err) {
       console.error('Registration error:', err);
-      return { success: false, error: err.message || 'Connection error' };
+      return { success: false, error: t('Connection error. Please try again.', 'មិនអាចភ្ជាប់ម៉ាស៊ីនមេបានទេ។ សូមព្យាយាមម្តងទៀត។') };
     }
   };
 
@@ -515,11 +549,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.removeItem('mdp_jwt_token');
     localStorage.removeItem('mdp_auth_user');
     setCurrentPage('home');
-    showToast('You have been securely logged out.', 'info');
+    showToast(t('You have been securely logged out.', 'អ្នកបានចាកចេញដោយសុវត្ថិភាព។'), 'info');
   };
 
   const updateProfile = async (data: { name?: string; phone?: string; avatarUrl?: string }): Promise<{ success: boolean; error?: string }> => {
-    if (!authToken) return { success: false, error: 'Not authenticated' };
+    if (!authToken) return { success: false, error: t('Not authenticated', 'មិនបានផ្ទៀងផ្ទាត់អត្តសញ្ញាណ') };
     try {
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
@@ -528,19 +562,25 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       const updatedUser = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: updatedUser?.error || 'Failed to update profile' };
+        return {
+          success: false,
+          error: language === 'en'
+            ? updatedUser?.error || 'Failed to update profile.'
+            : 'មិនអាចធ្វើបច្ចុប្បន្នភាពព័ត៌មានប្រវត្តិបានទេ។',
+        };
       }
       setCurrentUser(updatedUser);
       localStorage.setItem('mdp_auth_user', JSON.stringify(updatedUser));
-      showToast('Profile details updated.', 'success');
+      showToast(t('Profile details updated.', 'ព័ត៌មានប្រវត្តិត្រូវបានធ្វើបច្ចុប្បន្នភាព។'), 'success');
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
+    } catch (err) {
+      console.error('Profile update error:', err);
+      return { success: false, error: t('Failed to update profile. Please try again.', 'មិនអាចធ្វើបច្ចុប្បន្នភាពប្រវត្តិបានទេ។ សូមព្យាយាមម្តងទៀត។') };
     }
   };
 
   const changePassword = async (currentPassword: string, newPassword: string): Promise<{ success: boolean; error?: string }> => {
-    if (!authToken) return { success: false, error: 'Not authenticated' };
+    if (!authToken) return { success: false, error: t('Not authenticated', 'មិនបានផ្ទៀងផ្ទាត់អត្តសញ្ញាណ') };
     try {
       const res = await fetch('/api/auth/change-password', {
         method: 'POST',
@@ -549,12 +589,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       const data = await safeParseJson(res);
       if (!res.ok) {
-        return { success: false, error: data?.error || 'Failed to change password' };
+        return {
+          success: false,
+          error: language === 'en'
+            ? data?.error || 'Failed to change password.'
+            : 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។',
+        };
       }
-      showToast('Password changed successfully.', 'success');
+      showToast(t('Password changed successfully.', 'លេខសម្ងាត់ត្រូវបានផ្លាស់ប្តូរដោយជោគជ័យ។'), 'success');
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message };
+    } catch (err) {
+      console.error('Change password error:', err);
+      return { success: false, error: t('Failed to change password. Please try again.', 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។ សូមព្យាយាមម្តងទៀត។') };
     }
   };
 
@@ -589,14 +635,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const savedProd = await safeParseJson(res);
         if (savedProd && savedProd.id) {
           setProducts((prev) => prev.map((p) => (p.id === tempId ? savedProd : p)));
-          showToast(`Product "${savedProd.name}" saved securely!`, 'success');
+          showToast(t(`Product "${getLocalizedName(savedProd)}" saved securely!`, `ផលិតផល "${getLocalizedName(savedProd)}" ត្រូវបានរក្សាទុកដោយសុវត្ថិភាព!`), 'success');
         }
       } else {
-        showToast(`Product "${created.name}" created locally.`, 'info');
+        showToast(t(`Product "${getLocalizedName(created)}" created locally.`, `ផលិតផល "${getLocalizedName(created)}" ត្រូវបានបង្កើតក្នុងមូលដ្ឋាន។`), 'info');
       }
     } catch (err) {
       console.error('Error persisting product to backend:', err);
-      showToast(`Product "${created.name}" created locally.`, 'info');
+      showToast(t(`Product "${getLocalizedName(created)}" created locally.`, `ផលិតផល "${getLocalizedName(created)}" ត្រូវបានបង្កើតក្នុងមូលដ្ឋាន។`), 'info');
     }
   };
 
@@ -615,12 +661,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const saved = await safeParseJson(res);
         if (saved && saved.id) {
           setProducts((prev) => prev.map((p) => (p.id === id ? saved : p)));
-          showToast('Product updated in Neon database.', 'info');
+          showToast(t('Product updated in Neon database.', 'ផលិតផលត្រូវបានធ្វើបច្ចុប្បន្នភាពក្នុងមូលដ្ឋាន Neon។'), 'info');
         }
       }
     } catch (err) {
       console.error('Error updating product on backend:', err);
-      showToast('Product updated locally.', 'info');
+      showToast(t('Product updated locally.', 'ផលិតផលត្រូវបានធ្វើបច្ចុប្បន្នភាពក្នុងមូលដ្ឋាន។'), 'info');
     }
   };
 
@@ -632,10 +678,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      showToast('Product removed from database.', 'info');
+      showToast(t('Product removed from database.', 'ផលិតផលត្រូវបានដកចេញពីមូលដ្ឋានទិន្នន័យ។'), 'info');
     } catch (err) {
       console.error('Error deleting product on backend:', err);
-      showToast('Product removed locally.', 'info');
+      showToast(t('Product removed locally.', 'ផលិតផលត្រូវបានដកចេញក្នុងមូលដ្ឋាន។'), 'info');
     }
   };
 
@@ -657,12 +703,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const saved = await safeParseJson(res);
         if (saved && saved.id) {
           setCategories((prev) => prev.map((c) => (c.id === tempId ? saved : c)));
-          showToast(`Category "${saved.name}" saved to Neon database.`, 'success');
+          showToast(t(`Category "${getLocalizedName(saved)}" saved to Neon database.`, `ប្រភេទ "${getLocalizedName(saved)}" ត្រូវបានរក្សាទុកក្នុងមូលដ្ឋាន Neon។`), 'success');
         }
       }
     } catch (err) {
       console.error('Error adding category on backend:', err);
-      showToast(`Category "${created.name}" added locally.`, 'success');
+      showToast(t(`Category "${getLocalizedName(created)}" added locally.`, `ប្រភេទ "${getLocalizedName(created)}" ត្រូវបានបន្ថែមក្នុងមូលដ្ឋាន។`), 'success');
     }
   };
 
@@ -681,12 +727,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const saved = await safeParseJson(res);
         if (saved && saved.id) {
           setCategories((prev) => prev.map((c) => (c.id === id ? saved : c)));
-          showToast('Category updated in database.', 'info');
+          showToast(t('Category updated in database.', 'ប្រភេទត្រូវបានធ្វើបច្ចុប្បន្នភាពក្នុងមូលដ្ឋានទិន្នន័យ។'), 'info');
         }
       }
     } catch (err) {
       console.error('Error updating category on backend:', err);
-      showToast('Category updated locally.', 'info');
+      showToast(t('Category updated locally.', 'ប្រភេទត្រូវបានធ្វើបច្ចុប្បន្នភាពក្នុងមូលដ្ឋាន។'), 'info');
     }
   };
 
@@ -698,10 +744,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         method: 'DELETE',
         headers: getAuthHeaders(),
       });
-      showToast('Category deleted from database.', 'info');
+      showToast(t('Category deleted from database.', 'ប្រភេទត្រូវបានលុបចេញពីមូលដ្ឋានទិន្នន័យ។'), 'info');
     } catch (err) {
       console.error('Error deleting category on backend:', err);
-      showToast('Category deleted locally.', 'info');
+      showToast(t('Category deleted locally.', 'ប្រភេទត្រូវបានលុបក្នុងមូលដ្ឋាន។'), 'info');
     }
   };
 
@@ -747,7 +793,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     setOrders((prev) => [newOrder, ...prev]);
     setLastCreatedOrder(newOrder);
-    showToast(`Order Request #${newOrder.id} successfully placed!`, 'gold');
+    showToast(t(`Order Request #${newOrder.id} successfully placed!`, `សំណើកុម្ម៉ង់ #${newOrder.id} ត្រូវបានដាក់ដោយជោគជ័យ!`), 'gold');
 
     try {
       const res = await fetch('/api/orders', {
@@ -777,7 +823,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : o
       )
     );
-    showToast(`Order #${orderId} status changed to ${status}.`, 'info');
+    showToast(t(
+      `Order #${orderId} status changed to ${ORDER_STATUS_LABELS[status].en}.`,
+      `សំណើ #${orderId} បានប្តូរស្ថានភាពទៅជា ${ORDER_STATUS_LABELS[status].km}។`
+    ), 'info');
 
     try {
       await fetch(`/api/orders/${orderId}`, {
@@ -798,7 +847,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           : o
       )
     );
-    showToast('Admin note saved.', 'info');
+    showToast(t('Admin note saved.', 'កំណត់ចំណាំអ្នកគ្រប់គ្រងត្រូវបានរក្សាទុក។'), 'info');
 
     try {
       await fetch(`/api/orders/${orderId}`, {
@@ -813,7 +862,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const deleteOrder = async (orderId: string) => {
     setOrders((prev) => prev.filter((o) => o.id !== orderId));
-    showToast(`Order #${orderId} deleted.`, 'info');
+    showToast(t(`Order #${orderId} deleted.`, `សំណើ #${orderId} ត្រូវបានលុប។`), 'info');
 
     try {
       await fetch(`/api/orders/${orderId}`, {
@@ -828,7 +877,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const updateSettings = async (newSettings: Partial<StoreSettings>) => {
     const updated = { ...settings, ...newSettings };
     setSettings(updated);
-    showToast('Store settings updated.', 'success');
+    showToast(t('Store settings updated.', 'ការកំណត់ហាងត្រូវបានធ្វើបច្ចុប្បន្នភាព។'), 'success');
 
     try {
       const res = await fetch('/api/settings', {
@@ -863,12 +912,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         headers: getAuthHeaders(),
       });
       if (res.ok) {
-        showToast('Neon database reset to initial luxury collection.', 'gold');
+        showToast(t('Neon database reset to initial luxury collection.', 'មូលដ្ឋាន Neon ត្រូវបានកំណត់ឡើងវិញទៅកាតាឡុកប្រណិតដំបូង។'), 'gold');
       } else {
-        showToast('Store data reset.', 'gold');
+        showToast(t('Store data reset.', 'ទិន្នន័យហាងត្រូវបានកំណត់ឡើងវិញ។'), 'gold');
       }
     } catch {
-      showToast('Store data reset.', 'gold');
+      showToast(t('Store data reset.', 'ទិន្នន័យហាងត្រូវបានកំណត់ឡើងវិញ។'), 'gold');
     }
   };
 

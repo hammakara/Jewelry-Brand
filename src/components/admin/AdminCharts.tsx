@@ -63,7 +63,8 @@ export const DonutChart: React.FC<{
   thickness?: number;
   centerLabel?: string;
   centerSub?: string;
-}> = ({ data, size = 180, thickness = 22, centerLabel, centerSub }) => {
+  emptyLabel?: string;
+}> = ({ data, size = 180, thickness = 22, centerLabel, centerSub, emptyLabel = 'No data yet' }) => {
   const total = data.reduce((acc, d) => acc + (d.value || 0), 0);
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
@@ -71,7 +72,7 @@ export const DonutChart: React.FC<{
   if (total <= 0) {
     return (
       <div className="flex items-center justify-center text-white/50 text-xs" style={{ width: size, height: size }}>
-        No data yet
+        {emptyLabel}
       </div>
     );
   }
@@ -126,8 +127,10 @@ export const VerticalBarChart: React.FC<{
   height?: number;
   color?: string;
   prefix?: string;
-}> = ({ data, height = 120, color = 'rgba(255,255,255,0.85)', prefix = '' }) => {
+  locale?: string;
+}> = ({ data, height = 120, color = 'rgba(255,255,255,0.85)', prefix = '', locale = 'en-US' }) => {
   const max = Math.max(...data.map((d) => d.value), 1);
+  const numberFormatter = new Intl.NumberFormat(locale);
 
   return (
     <div className="w-full flex items-end gap-1.5" style={{ height }}>
@@ -138,7 +141,7 @@ export const VerticalBarChart: React.FC<{
             <div
               className="text-[9px] font-mono text-white/80 font-bold opacity-0 group-hover:opacity-100 transition-opacity"
             >
-              {prefix}{d.value}
+              {prefix}{numberFormatter.format(d.value)}
             </div>
             <motion.div
               initial={{ height: 4 }}
@@ -166,8 +169,10 @@ export const VerticalBarChart: React.FC<{
 export const HorizontalBars: React.FC<{
   data: ChartDatum[];
   prefix?: string;
-}> = ({ data, prefix = '' }) => {
+  locale?: string;
+}> = ({ data, prefix = '', locale = 'en-US' }) => {
   const max = Math.max(...data.map((d) => d.value), 1);
+  const numberFormatter = new Intl.NumberFormat(locale);
 
   return (
     <div className="space-y-3">
@@ -177,7 +182,7 @@ export const HorizontalBars: React.FC<{
           <div key={i}>
             <div className="flex items-center justify-between text-xs mb-1">
               <span className="text-white/85 font-medium truncate pr-2">{d.label}</span>
-              <span className="font-mono font-bold text-white shrink-0">{prefix}{d.value}</span>
+              <span className="font-mono font-bold text-white shrink-0">{prefix}{numberFormatter.format(d.value)}</span>
             </div>
             <div className="h-2.5 rounded-full bg-white/10 overflow-hidden">
               <motion.div
@@ -200,8 +205,12 @@ export const HorizontalBars: React.FC<{
 /* ------------------------------------------------------------------ */
 export const Funnel: React.FC<{
   steps: { label: string; value: number; color?: string }[];
-}> = ({ steps }) => {
+  entryLabel?: string;
+  conversionLabel?: string;
+  locale?: string;
+}> = ({ steps, entryLabel = 'entry', conversionLabel = 'conv', locale = 'en-US' }) => {
   const max = Math.max(...steps.map((s) => s.value), 1);
+  const numberFormatter = new Intl.NumberFormat(locale);
 
   return (
     <div className="space-y-2.5">
@@ -221,11 +230,11 @@ export const Funnel: React.FC<{
               }}
             >
               {s.label}
-              <span className="block font-mono text-white/85 text-[11px] mt-0.5">{s.value}</span>
+              <span className="block font-mono text-white/85 text-[11px] mt-0.5">{numberFormatter.format(s.value)}</span>
             </div>
             <div className="shrink-0 text-right">
-              <span className="text-[10px] font-bold text-white/70 block">{i === 0 ? '—' : `${conversion}%`}</span>
-              <span className="text-[9px] text-white/40 uppercase tracking-wider">{i === 0 ? 'entry' : 'conv'}</span>
+              <span className="text-[10px] font-bold text-white/70 block">{i === 0 ? '—' : `${numberFormatter.format(conversion)}%`}</span>
+              <span className="text-[9px] text-white/40 uppercase tracking-wider">{i === 0 ? entryLabel : conversionLabel}</span>
             </div>
           </div>
         );

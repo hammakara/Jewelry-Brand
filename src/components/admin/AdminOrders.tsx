@@ -18,12 +18,19 @@ import {
 import { OrderRequest, OrderStatus } from '../../types';
 
 export const AdminOrders: React.FC = () => {
-  const { orders, updateOrderStatus, updateOrderAdminNotes, deleteOrder, settings, language } = useStore();
+  const { orders, products, updateOrderStatus, updateOrderAdminNotes, deleteOrder, settings, language } = useStore();
+  const locale = language === 'en' ? 'en-US' : 'km-KH';
+  const numberFormatter = new Intl.NumberFormat(locale);
 
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<OrderRequest | null>(null);
   const [editingAdminNotes, setEditingAdminNotes] = useState('');
+
+  const getLocalizedProductName = (order: OrderRequest) => {
+    const product = products.find((item) => item.id === order.productId);
+    return language === 'km' && product?.nameKhmer ? product.nameKhmer : product?.name || order.productName;
+  };
 
   const filteredOrders = orders.filter((o) => {
     if (statusFilter !== 'ALL' && o.status !== statusFilter) return false;
@@ -34,7 +41,7 @@ export const AdminOrders: React.FC = () => {
         o.customerName.toLowerCase().includes(q) ||
         o.customerPhone.toLowerCase().includes(q) ||
         o.customerTelegram.toLowerCase().includes(q) ||
-        o.productName.toLowerCase().includes(q)
+        getLocalizedProductName(o).toLowerCase().includes(q)
       );
     }
     return true;
@@ -84,7 +91,7 @@ export const AdminOrders: React.FC = () => {
         <div className="flex items-center gap-2">
           <span className="text-xs text-white/80 font-medium">{language === 'en' ? 'Total in Pipeline:' : 'សរុបក្នុងបន្ទរ:'}</span>
           <span className="px-3 py-1 bg-[#3D2B05] border border-white/30 text-white font-mono font-bold text-xs rounded-lg shadow-sm">
-            {orders.length} {language === 'en' ? 'Requests' : 'សំណើ'}
+            {numberFormatter.format(orders.length)} {language === 'en' ? 'Requests' : 'សំណើ'}
           </span>
         </div>
       </div>
@@ -116,7 +123,7 @@ export const AdminOrders: React.FC = () => {
                     : 'bg-[#3D2B05] text-white/80 hover:text-white hover:bg-[#322303] border-white/15'
                 }`}
               >
-                {getStatusLabel(st)} ({count})
+                {getStatusLabel(st)} ({numberFormatter.format(count)})
               </button>
             );
           })}
@@ -173,7 +180,7 @@ export const AdminOrders: React.FC = () => {
                   <td className="py-3 px-4">
                     <span className="font-mono font-bold text-white">#{order.id}</span>
                     <div className="text-[10px] text-white/60">
-                      {new Date(order.createdAt).toLocaleDateString()} &bull; {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(order.createdAt).toLocaleDateString(locale)} &bull; {new Date(order.createdAt).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: language === 'en' })}
                     </div>
                   </td>
 
@@ -191,21 +198,21 @@ export const AdminOrders: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <img
                         src={order.productImage}
-                        alt={order.productName}
+                        alt={getLocalizedProductName(order)}
                         className="w-10 h-10 rounded-lg object-cover border border-white/30 bg-[#352504] shrink-0"
                       />
                       <div className="min-w-0">
-                        <div className="font-medium text-white truncate max-w-xs">{order.productName}</div>
-                        <div className="text-[10px] text-white/70">{language === 'en' ? 'Qty:' : 'បរិមាណ:'} {order.quantity}</div>
+                        <div className="font-medium text-white truncate max-w-xs">{getLocalizedProductName(order)}</div>
+                        <div className="text-[10px] text-white/70">{language === 'en' ? 'Qty:' : 'បរិមាណ:'} {numberFormatter.format(order.quantity)}</div>
                       </div>
                     </div>
                   </td>
 
                   {/* Total */}
                   <td className="py-3 px-4 font-mono font-bold text-white">
-                    ${order.totalAmount}
+                    ${numberFormatter.format(order.totalAmount)}
                     <div className="text-[10px] text-white/60 font-normal">
-                      ~{(order.totalAmount * settings.exchangeRateKhr).toLocaleString()} KHR
+                      ~{numberFormatter.format(order.totalAmount * settings.exchangeRateKhr)} KHR
                     </div>
                   </td>
 
@@ -304,13 +311,13 @@ export const AdminOrders: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <img
                     src={selectedOrder.productImage}
-                    alt={selectedOrder.productName}
+                    alt={getLocalizedProductName(selectedOrder)}
                     className="w-16 h-16 rounded-lg object-cover border border-white/30 bg-[#2C1E03] shrink-0"
                   />
                   <div>
-                    <h5 className="font-bold text-sm text-white">{selectedOrder.productName}</h5>
-                    <div className="text-xs text-white/70 mt-1">{language === 'en' ? 'Quantity:' : 'បរិមាណ:'} {selectedOrder.quantity}</div>
-                    <div className="text-base font-mono font-bold text-white mt-0.5">${selectedOrder.totalAmount}</div>
+                    <h5 className="font-bold text-sm text-white">{getLocalizedProductName(selectedOrder)}</h5>
+                    <div className="text-xs text-white/70 mt-1">{language === 'en' ? 'Quantity:' : 'បរិមាណ:'} {numberFormatter.format(selectedOrder.quantity)}</div>
+                    <div className="text-base font-mono font-bold text-white mt-0.5">${numberFormatter.format(selectedOrder.totalAmount)}</div>
                   </div>
                 </div>
               </div>
@@ -330,7 +337,7 @@ export const AdminOrders: React.FC = () => {
                   </div>
                 )}
                 <div className="text-white/70 pt-1">
-                  {language === 'en' ? 'Preferred Contact:' : 'ការទាក់ទងដែលពេញចិត្ត:'} <strong className="text-white uppercase">{selectedOrder.preferredContact}</strong>
+                  {language === 'en' ? 'Contact Method:' : 'របៀបទាក់ទង:'} <strong className="text-white uppercase">{selectedOrder.customerTelegram ? 'Telegram' : (language === 'en' ? 'Phone' : 'ទូរសព្ទ')}</strong>
                 </div>
               </div>
 
@@ -348,12 +355,12 @@ export const AdminOrders: React.FC = () => {
                 </div>
               )}
 
-              {selectedOrder.customerNotes && (
+              {selectedOrder.notes && (
                 <div className="bg-[#3D2B05] p-3 rounded-xl border border-white/20 flex items-start gap-2">
                   <FileText className="w-4 h-4 text-white shrink-0 mt-0.5" />
                   <div>
                     <strong className="text-white block font-bold">{language === 'en' ? 'Customer Custom Note / Request:' : 'កំណត់ចំណាំ / សំណើរបស់អតិថិជន:'}</strong>
-                    <span className="text-white/80">{selectedOrder.customerNotes}</span>
+                    <span className="text-white/80">{selectedOrder.notes}</span>
                   </div>
                 </div>
               )}

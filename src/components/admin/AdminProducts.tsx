@@ -20,6 +20,7 @@ import { Product, PearlType, MetalMaterial, PearlColor } from '../../types';
 
 export const AdminProducts: React.FC = () => {
   const { products, categories, addProduct, updateProduct, deleteProduct, viewProductDetails, language, authToken } = useStore();
+  const numberFormatter = new Intl.NumberFormat(language === 'en' ? 'en-US' : 'km-KH');
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('all');
@@ -87,6 +88,7 @@ export const AdminProducts: React.FC = () => {
       const q = searchQuery.toLowerCase();
       return (
         p.name.toLowerCase().includes(q) ||
+        (p.nameKhmer || '').toLowerCase().includes(q) ||
         p.sku.toLowerCase().includes(q) ||
         p.pearlType.toLowerCase().includes(q)
       );
@@ -219,7 +221,7 @@ export const AdminProducts: React.FC = () => {
       const dataUrl = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read file.'));
+        reader.onerror = () => reject(new Error('FILE_READ_FAILED'));
         reader.readAsDataURL(file);
       });
 
@@ -234,15 +236,17 @@ export const AdminProducts: React.FC = () => {
 
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error(data.error || `Upload failed (${res.status})`);
+        throw new Error(`UPLOAD_FAILED_${res.status}`);
       }
 
       if (data.url) {
         setFormData((prev) => ({ ...prev, images: [data.url, ...prev.images] }));
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Image upload error:', err);
-      setUploadError(err?.message || (language === 'en' ? 'Upload failed. Check Cloudinary config.' : 'ការទាញយកបរាជ័យ។'));
+      setUploadError(language === 'en'
+        ? 'Unable to upload the image. Check your connection and Cloudinary configuration.'
+        : 'មិនអាចទាញយករូបភាពបានទេ។ សូមពិនិត្យការតភ្ជាប់ និងការកំណត់ Cloudinary។');
     } finally {
       setIsUploading(false);
     }
@@ -291,7 +295,7 @@ export const AdminProducts: React.FC = () => {
             onChange={(e) => setSelectedCategoryFilter(e.target.value)}
             className="bg-[#3D2B05] border border-white/30 text-xs text-white rounded-lg px-3 py-2 outline-none font-medium"
           >
-            <option value="all" className="bg-[#3D2B05]">{language === 'en' ? 'All Categories' : 'ប្រភេទទាំងអស់'} ({products.length})</option>
+            <option value="all" className="bg-[#3D2B05]">{language === 'en' ? 'All Categories' : 'ប្រភេទទាំងអស់'} ({numberFormatter.format(products.length)})</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id} className="bg-[#3D2B05]">{language === 'km' && c.nameKhmer ? c.nameKhmer : c.name}</option>
             ))}
@@ -303,19 +307,19 @@ export const AdminProducts: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-[#523B08] border border-emerald-400/30 rounded-xl px-4 py-3 shadow-md">
           <div className="text-[10px] uppercase tracking-wider text-emerald-200/80 font-bold">{language === 'en' ? 'In Stock' : 'មានស្តុក'}</div>
-          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'in_stock').length}</div>
+          <div className="font-mono font-bold text-white text-lg">{numberFormatter.format(products.filter(p => p.availability === 'in_stock').length)}</div>
         </div>
         <div className="bg-[#523B08] border border-amber-400/30 rounded-xl px-4 py-3 shadow-md">
           <div className="text-[10px] uppercase tracking-wider text-amber-200/80 font-bold">{language === 'en' ? 'Limited' : 'មានកំណត់'}</div>
-          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'limited').length}</div>
+          <div className="font-mono font-bold text-white text-lg">{numberFormatter.format(products.filter(p => p.availability === 'limited').length)}</div>
         </div>
         <div className="bg-[#523B08] border border-purple-400/30 rounded-xl px-4 py-3 shadow-md">
           <div className="text-[10px] uppercase tracking-wider text-purple-200/80 font-bold">{language === 'en' ? 'Made to Order' : 'ផលិតតាមបញ្ជា'}</div>
-          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'made_to_order').length}</div>
+          <div className="font-mono font-bold text-white text-lg">{numberFormatter.format(products.filter(p => p.availability === 'made_to_order').length)}</div>
         </div>
         <div className="bg-[#523B08] border border-rose-400/30 rounded-xl px-4 py-3 shadow-md">
           <div className="text-[10px] uppercase tracking-wider text-rose-200/80 font-bold">{language === 'en' ? 'Out of Stock' : 'អស់ស្តុក'}</div>
-          <div className="font-mono font-bold text-white text-lg">{products.filter(p => p.availability === 'out_of_stock').length}</div>
+          <div className="font-mono font-bold text-white text-lg">{numberFormatter.format(products.filter(p => p.availability === 'out_of_stock').length)}</div>
         </div>
       </div>
 
@@ -397,7 +401,7 @@ export const AdminProducts: React.FC = () => {
 
                     {/* Price */}
                     <td className="py-3 px-4 font-mono font-bold text-white">
-                      ${product.price}
+                      ${numberFormatter.format(product.price)}
                     </td>
 
                     {/* Status */}

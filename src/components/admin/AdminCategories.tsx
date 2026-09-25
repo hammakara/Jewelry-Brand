@@ -5,6 +5,7 @@ import { Category } from '../../types';
 
 export const AdminCategories: React.FC = () => {
   const { categories, products, addCategory, updateCategory, deleteCategory, language } = useStore();
+  const numberFormatter = new Intl.NumberFormat(language === 'en' ? 'en-US' : 'km-KH');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -106,12 +107,12 @@ export const AdminCategories: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#523B08] via-transparent to-transparent"></div>
                 <div className="absolute bottom-3 left-4 right-4 text-white">
                   <span className="text-[10px] uppercase font-bold tracking-widest text-white/90">
-                    {language === 'en' ? `${itemCount} Products Listed` : `បានចុះបញ្ជីផលិតផល ${itemCount}`}
+                    {language === 'en' ? `${numberFormatter.format(itemCount)} Products Listed` : `បានចុះបញ្ជីផលិតផល ${numberFormatter.format(itemCount)}`}
                   </span>
                   <h3 className="font-serif-luxury text-xl font-bold text-white">
                     {language === 'km' && cat.nameKhmer ? cat.nameKhmer : cat.name}
                   </h3>
-                  {cat.nameKhmer && (
+                  {language === 'en' && cat.nameKhmer && (
                     <div className="text-xs text-white/80 font-medium">{cat.nameKhmer}</div>
                   )}
                 </div>
@@ -137,8 +138,8 @@ export const AdminCategories: React.FC = () => {
                       onClick={() => {
                         if (itemCount > 0) {
                           alert(language === 'en'
-                            ? `Cannot delete category with ${itemCount} products. Please reassign products first.`
-                            : `មិនអាចលុបប្រភេទដែលមានផលិតផល ${itemCount} បានទេ។ សូមផ្ទេរផលិតផលជាមុនសិន។`);
+                            ? `Cannot delete category with ${numberFormatter.format(itemCount)} products. Please reassign products first.`
+                            : `មិនអាចលុបប្រភេទដែលមានផលិតផល ${numberFormatter.format(itemCount)} បានទេ។ សូមផ្ទេរផលិតផលជាមុនសិន។`);
                           return;
                         }
                         if (window.confirm(language === 'en'
@@ -212,7 +213,7 @@ export const AdminCategories: React.FC = () => {
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  placeholder="e.g. pearl-pendants"
+                  placeholder={language === 'en' ? 'e.g. pearl-pendants' : 'ឧ. pearl-pendants'}
                   className="w-full bg-[#3D2B05] border border-white/30 focus:border-white rounded-lg px-3 py-2 text-xs text-white outline-none font-mono"
                 />
               </div>

@@ -15,7 +15,7 @@ import {
 import { StoreSettings } from '../../types';
 
 export const AdminSettings: React.FC = () => {
-  const { settings, updateSettings, showToast, openChangePasswordModal, language } = useStore();
+  const { settings, updateSettings, openChangePasswordModal, language } = useStore();
 
   const [formData, setFormData] = useState<StoreSettings>({ ...settings });
   const [newPasscode, setNewPasscode] = useState('');
@@ -29,7 +29,6 @@ export const AdminSettings: React.FC = () => {
     }
     updateSettings(payload);
     setSavedSuccess(true);
-    showToast(language === 'en' ? 'Boutique store settings updated successfully!' : 'ការកំណត់ហាងត្រូវបានធ្វើបច្ចុប្បន្នភាពដោយជោគជ័យ!', 'gold');
     setTimeout(() => setSavedSuccess(false), 3000);
   };
 

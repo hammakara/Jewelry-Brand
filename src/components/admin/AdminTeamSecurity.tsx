@@ -73,7 +73,7 @@ export const AdminTeamSecurity: React.FC = () => {
 
       const data = await res.json();
       if (!res.ok) {
-        setFormError(data.error || (language === 'en' ? 'Failed to create team member.' : 'មិនអាចបង្កើតសមាជិកក្រុមបានទេ។'));
+        setFormError(language === 'en' ? 'Failed to create team member.' : 'មិនអាចបង្កើតសមាជិកក្រុមបានទេ។');
         return;
       }
 
@@ -84,8 +84,9 @@ export const AdminTeamSecurity: React.FC = () => {
       setPhone('');
       setIsAddingUser(false);
       fetchUsers();
-    } catch (err: any) {
-      setFormError(err.message || (language === 'en' ? 'Error creating user' : 'មានបញ្ហាក្នុងការបង្កើតអ្នកប្រើប្រាស់'));
+    } catch (err) {
+      console.error('Error creating team member:', err);
+      setFormError(language === 'en' ? 'Error creating user.' : 'មានបញ្ហាក្នុងការបង្កើតអ្នកប្រើប្រាស់។');
     }
   };
 
@@ -99,15 +100,15 @@ export const AdminTeamSecurity: React.FC = () => {
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        showToast(data.error || (language === 'en' ? 'Cannot delete user' : 'មិនអាចលុបអ្នកប្រើប្រាស់បានទេ'), 'info');
+        showToast(language === 'en' ? 'Cannot delete user.' : 'មិនអាចលុបអ្នកប្រើប្រាស់បានទេ។', 'info');
         return;
       }
 
       showToast(language === 'en' ? `Access revoked for ${userName}.` : `សិទ្ធិចូលប្រើរបស់ ${userName} ត្រូវបានដកហូត។`, 'info');
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch (err: any) {
-      showToast(err.message, 'info');
+    } catch (err) {
+      console.error('Error deleting team member:', err);
+      showToast(language === 'en' ? 'Cannot delete user.' : 'មិនអាចលុបអ្នកប្រើប្រាស់បានទេ។', 'info');
     }
   };
 
@@ -126,9 +127,9 @@ export const AdminTeamSecurity: React.FC = () => {
         body: JSON.stringify({ currentPassword, newPassword }),
       });
 
-      const data = await res.json();
+      await res.json();
       if (!res.ok) {
-        setPassError(data.error || (language === 'en' ? 'Failed to change password.' : 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។'));
+        setPassError(language === 'en' ? 'Failed to change password.' : 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។');
         return;
       }
 
@@ -139,8 +140,9 @@ export const AdminTeamSecurity: React.FC = () => {
         setIsChangingPass(false);
         setPassSuccess(null);
       }, 2000);
-    } catch (err: any) {
-      setPassError(err.message || (language === 'en' ? 'Error changing password.' : 'មានបញ្ហាក្នុងការផ្លាស់ប្តូរលេខសម្ងាត់។'));
+    } catch (err) {
+      console.error('Error changing team member password:', err);
+      setPassError(language === 'en' ? 'Error changing password.' : 'មានបញ្ហាក្នុងការផ្លាស់ប្តូរលេខសម្ងាត់។');
     }
   };
 
@@ -310,8 +312,8 @@ export const AdminTeamSecurity: React.FC = () => {
                 onChange={(e) => setRole(e.target.value as any)}
                 className="w-full bg-[#3D2B05] border border-white/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-white"
               >
-                <option value="ADMIN">{language === 'en' ? 'ADMIN (Full Store & Order Management Access)' : 'ADMIN (សិទ្ធិគ្រប់គ្រងហាង និងកុម្ម៉ង់ពេញលេញ)'}</option>
-                <option value="CUSTOMER">{language === 'en' ? 'CUSTOMER (Normal Client User)' : 'CUSTOMER (អតិថិជនធម្មតា)'}</option>
+                <option value="ADMIN">{language === 'en' ? 'Administrator (Full Store & Order Management Access)' : 'អ្នកគ្រប់គ្រង (សិទ្ធិគ្រប់គ្រងហាង និងកុម្ម៉ង់ពេញលេញ)'}</option>
+                <option value="CUSTOMER">{language === 'en' ? 'Customer (Standard Client User)' : 'អតិថិជន (អតិថិជនធម្មតា)'}</option>
               </select>
             </div>
 
@@ -392,7 +394,7 @@ export const AdminTeamSecurity: React.FC = () => {
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-white/60">ID: {u.id}</div>
+                          <div className="text-[10px] text-white/60">{language === 'en' ? 'ID:' : 'លេខអត្តសញ្ញាណ៖'} {u.id}</div>
                         </div>
                       </div>
                     </td>

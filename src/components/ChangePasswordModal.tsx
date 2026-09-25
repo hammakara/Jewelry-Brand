@@ -18,7 +18,6 @@ export const ChangePasswordModal: React.FC = () => {
     closeChangePasswordModal, 
     currentUser, 
     changePassword, 
-    showToast,
     language,
   } = useStore();
 
@@ -69,7 +68,7 @@ export const ChangePasswordModal: React.FC = () => {
       setConfirmPassword('');
       closeChangePasswordModal();
     } else {
-      setErrorMessage(res.error || (language === 'en' ? 'Failed to update password. Please check your current password.' : 'ការផ្លាស់ប្តូរលេខសម្ងាត់បរាជ័យ។ សូមពិនិត្យលេខសម្ងាត់បច្ចុប្បន្នរបស់អ្នក។'));
+      setErrorMessage(language === 'en' ? 'Failed to update password. Please check your current password.' : 'មិនអាចផ្លាស់ប្តូរលេខសម្ងាត់បានទេ។ សូមពិនិត្យលេខសម្ងាត់បច្ចុប្បន្នរបស់អ្នក។');
     }
   };
 
@@ -110,7 +109,9 @@ export const ChangePasswordModal: React.FC = () => {
                 ? 'bg-amber-400 text-stone-950'
                 : 'bg-emerald-400/20 text-emerald-200 border border-emerald-400/40'
             }`}>
-              {currentUser.role}
+              {currentUser.role === 'ADMIN'
+                ? (language === 'en' ? 'Administrator' : 'អ្នកគ្រប់គ្រង')
+                : (language === 'en' ? 'Customer' : 'អតិថិជន')}
             </span>
           </div>
         </div>
@@ -168,7 +169,7 @@ export const ChangePasswordModal: React.FC = () => {
                 minLength={6}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="At least 6 characters"
+                placeholder={language === 'en' ? 'At least 6 characters' : 'យ៉ាងតិច ៦ តួអក្សរ'}
                 className="w-full bg-stone-950/80 border border-stone-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-stone-500 outline-none transition-all"
               />
               <button
@@ -195,7 +196,7 @@ export const ChangePasswordModal: React.FC = () => {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Re-enter new password"
+                placeholder={language === 'en' ? 'Re-enter new password' : 'បញ្ចូលលេខសម្ងាត់ថ្មីម្តងទៀត'}
                 className="w-full bg-stone-950/80 border border-stone-700 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-stone-500 outline-none transition-all"
               />
               <button

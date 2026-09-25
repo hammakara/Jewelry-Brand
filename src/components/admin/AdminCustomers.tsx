@@ -5,6 +5,8 @@ import { Customer } from '../../types';
 
 export const AdminCustomers: React.FC = () => {
   const { customers, orders, language } = useStore();
+  const locale = language === 'en' ? 'en-US' : 'km-KH';
+  const numberFormatter = new Intl.NumberFormat(locale);
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredCustomers = customers.filter((c) => {
@@ -66,7 +68,7 @@ export const AdminCustomers: React.FC = () => {
             </span>
           )}
           <span className="px-3 py-1 bg-[#3D2B05] border border-white/30 text-white font-mono font-bold text-xs rounded-lg shadow-sm">
-            {customers.length} {language === 'en' ? 'Profiles' : 'ប្រវត្តិរូប'}
+            {numberFormatter.format(customers.length)} {language === 'en' ? 'Profiles' : 'ប្រវត្តិរូប'}
           </span>
         </div>
       </div>
@@ -87,11 +89,11 @@ export const AdminCustomers: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center sm:text-left">
           <div className="px-3 py-2 bg-[#3D2B05] border border-white/15 rounded-lg">
             <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold">{language === 'en' ? 'Portfolio Value' : 'តម្លៃផលប័ត្រ'}</div>
-            <div className="font-mono font-bold text-white">${totalSpend.toLocaleString()}</div>
+            <div className="font-mono font-bold text-white">${numberFormatter.format(totalSpend)}</div>
           </div>
           <div className="px-3 py-2 bg-[#3D2B05] border border-white/15 rounded-lg">
             <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold">{language === 'en' ? 'Avg. Client Value' : 'តម្លៃអតិថិជនជាមធ្យម'}</div>
-            <div className="font-mono font-bold text-white">${customers.length ? Math.round((totalSpend / customers.length) * 100) / 100 : 0}</div>
+            <div className="font-mono font-bold text-white">${numberFormatter.format(customers.length ? Math.round((totalSpend / customers.length) * 100) / 100 : 0)}</div>
           </div>
           <div className="px-3 py-2 bg-[#3D2B05] border border-white/15 rounded-lg">
             <div className="text-[10px] uppercase tracking-wider text-white/60 font-bold">{language === 'en' ? 'Lifetime Orders' : 'កុម្ម៉ង់សរុប'}</div>
@@ -139,7 +141,7 @@ export const AdminCustomers: React.FC = () => {
 
                     <div className="text-right">
                       <div className="text-sm font-mono font-bold text-amber-200">
-                        ${cust.totalSpent.toLocaleString()}
+                        ${numberFormatter.format(cust.totalSpent)}
                       </div>
                       <div className="text-[10px] text-white/70">
                         {cust.orderCount ?? cust.ordersCount ?? 1} {language === 'en' ? 'Orders' : 'ការកុម្ម៉ង់'}
